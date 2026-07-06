@@ -52,6 +52,24 @@
             background-color: #ffffff;
             border-bottom: 1px solid #e0ddd8;
         }
+        /* Nav inner scroll container */
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            position: relative;
+        }
+        .nav-links-scroll {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            flex-shrink: 0;
+        }
         .nav-link {
             font-family: 'Montserrat', sans-serif;
             font-weight: 600;
@@ -59,18 +77,27 @@
             letter-spacing: 0.12em;
             text-transform: uppercase;
             color: #888888;
-            padding: 0 4px;
-            padding-bottom: 2px;
+            padding: 0 1rem;
+            height: 56px;
+            line-height: 56px;
+            padding-bottom: 0;
             border-bottom: 2px solid transparent;
             cursor: pointer;
             transition: color 0.2s ease, border-color 0.2s ease;
             text-decoration: none;
             background: none; border-top: none; border-left: none; border-right: none;
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            min-height: 44px;
+            box-sizing: border-box;
         }
         .nav-link:hover { color: #f0ede8; }
         body.light-mode .nav-link:hover { color: #1a1a1a; }
         .nav-link.active { color: #c8922a; border-bottom-color: #c8922a; }
         body.light-mode .nav-link.active { color: #b07d20; border-bottom-color: #b07d20; }
+        /* Desktop theme toggle (inside nav) */
         .theme-toggle {
             font-family: 'Montserrat', sans-serif;
             font-weight: 600;
@@ -84,10 +111,99 @@
             cursor: pointer;
             border-radius: 0;
             transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+            flex-shrink: 0;
         }
         .theme-toggle:hover { color: #f0ede8; border-color: #888888; }
         body.light-mode .theme-toggle { color: #666666; border-color: #d0cdc8; }
         body.light-mode .theme-toggle:hover { color: #1a1a1a; border-color: #666666; }
+        /* Mobile-only floating theme toggle */
+        .theme-toggle-fab {
+            display: none;
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1001;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: #c8922a;
+            color: #000000;
+            border: none;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 1rem;
+            line-height: 1;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            align-items: center;
+            justify-content: center;
+        }
+        .theme-toggle-fab:hover { background-color: #d9a33d; box-shadow: 0 6px 20px rgba(0,0,0,0.6); }
+        body.light-mode .theme-toggle-fab { background-color: #b07d20; }
+        body.light-mode .theme-toggle-fab:hover { background-color: #c8922a; }
+        /* Mobile nav adjustments */
+        @media (max-width: 768px) {
+            .nav-inner {
+                padding: 0 0 0 16px;
+                gap: 8px;
+                overflow: hidden;
+            }
+            .nav-wordmark-wrap {
+                flex-shrink: 0;
+            }
+            .nav-links-scroll {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                gap: 0;
+                flex: 1;
+                min-width: 0;
+            }
+            .nav-links-scroll::-webkit-scrollbar {
+                display: none;
+            }
+            /* Fade hint on the right edge */
+            .nav-links-scroll-wrap {
+                position: relative;
+                flex: 1;
+                min-width: 0;
+                overflow: hidden;
+            }
+            .nav-links-scroll-wrap::after {
+                content: '';
+                position: absolute;
+                top: 0; right: 0; bottom: 0;
+                width: 32px;
+                pointer-events: none;
+                background: linear-gradient(to right, transparent, #0a0a0a);
+                transition: background 0.3s ease;
+            }
+            body.light-mode .nav-links-scroll-wrap::after {
+                background: linear-gradient(to right, transparent, #ffffff);
+            }
+            /* Hide desktop theme toggle on mobile */
+            .theme-toggle { display: none; }
+            /* Show FAB on mobile */
+            .theme-toggle-fab { display: inline-flex; }
+            /* Shorten tab labels on mobile via data attribute */
+            .nav-link[data-mobile-label]::before {
+                content: attr(data-mobile-label);
+            }
+            .nav-link[data-mobile-label] .nav-label-full {
+                display: none;
+            }
+        }
+        @media (min-width: 769px) {
+            .nav-links-scroll-wrap {
+                position: relative;
+                flex-shrink: 0;
+            }
+            .nav-link[data-mobile-label] .nav-label-full {
+                display: inline;
+            }
+        }
+ 
         .tab-content { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.2s ease, transform 0.2s ease; }
         .tab-content.active { display: block; opacity: 1; transform: translateY(0); }
         .hero-section {
@@ -416,25 +532,31 @@
     </div>
 </div>
 
+<!-- FLOATING THEME TOGGLE (mobile only) -->
+<button class="theme-toggle-fab" id="themeToggleFab" onclick="toggleTheme()" aria-label="Toggle theme">○</button>
+
 <!-- NAV -->
 <nav class="nav-bar">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
+    <div class="nav-inner">
+        <div class="nav-wordmark-wrap" style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
             <div class="online-indicator" id="online-indicator">
                 <div class="online-dot" id="online-dot"></div>
                 <span class="offline-label" id="offline-label">Offline</span>
             </div>
             <div class="wordmark">Col de Vence</div>
         </div>
-        <div style="display: flex; align-items: center; gap: 28px; flex-shrink: 0;">
-            <button class="nav-link active" onclick="switchTab('home')">Home</button>
-            <button class="nav-link" onclick="switchTab('log')">Log Ride</button>
-            <button class="nav-link" onclick="switchTab('rides')">My Rides</button>
-            <button class="nav-link" onclick="switchTab('route')">Route</button>
+        <div class="nav-links-scroll-wrap">
+            <div class="nav-links-scroll" id="nav-links-scroll">
+                <button class="nav-link active" onclick="switchTab('home')" data-tab="home" data-mobile-label="HOME"><span class="nav-label-full">Home</span></button>
+                <button class="nav-link" onclick="switchTab('log')" data-tab="log" data-mobile-label="LOG"><span class="nav-label-full">Log Ride</span></button>
+                <button class="nav-link" onclick="switchTab('rides')" data-tab="rides" data-mobile-label="RIDES"><span class="nav-label-full">My Rides</span></button>
+                <button class="nav-link" onclick="switchTab('route')" data-tab="route" data-mobile-label="ROUTE"><span class="nav-label-full">Route</span></button>
+            </div>
         </div>
         <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">DARK</button>
     </div>
 </nav>
+ 
 
 <div class="main-content">
 
@@ -776,10 +898,14 @@ function initTheme() {
         isLightMode = true;
         document.body.classList.add('light-mode');
         document.getElementById('themeToggle').textContent = 'DARK';
+        document.getElementById('themeToggleFab').textContent = '●';
+        document.getElementById('themeToggleFab').title = 'Switch to dark mode';
     } else {
         isLightMode = false;
         document.body.classList.remove('light-mode');
         document.getElementById('themeToggle').textContent = 'LIGHT';
+        document.getElementById('themeToggleFab').textContent = '○';
+        document.getElementById('themeToggleFab').title = 'Switch to light mode';
     }
     updateChartTheme();
 }
@@ -789,14 +915,19 @@ function toggleTheme() {
     if (isLightMode) {
         document.body.classList.add('light-mode');
         document.getElementById('themeToggle').textContent = 'DARK';
+        document.getElementById('themeToggleFab').textContent = '●';
+        document.getElementById('themeToggleFab').title = 'Switch to dark mode';
         localStorage.setItem('colDeVenceTheme', 'light');
     } else {
         document.body.classList.remove('light-mode');
         document.getElementById('themeToggle').textContent = 'LIGHT';
+        document.getElementById('themeToggleFab').textContent = '○';
+        document.getElementById('themeToggleFab').title = 'Switch to light mode';
         localStorage.setItem('colDeVenceTheme', 'dark');
     }
     updateChartTheme();
 }
+ 
 
 function updateChartTheme() {
     if (!elevationChart) return;
@@ -836,10 +967,13 @@ function switchTab(tab) {
         targetEl.style.transform = 'translateY(0)';
     }, 10);
 
-    const navButtons = document.querySelectorAll('.nav-link');
-    const tabNames = ['home', 'log', 'rides', 'route'];
-    const idx = tabNames.indexOf(tab);
-    if (navButtons[idx]) navButtons[idx].classList.add('active');
+    // Activate the matching nav button by data-tab attribute
+    const activeBtn = document.querySelector(`.nav-link[data-tab="${tab}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+        // Scroll the active tab into view within the scrollable nav
+        activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
 
     currentTab = tab;
 
@@ -855,6 +989,7 @@ function switchTab(tab) {
         applyResponsiveGrid();
     }
 }
+ 
 
 // ============================================================
 // LOCALSTORAGE
