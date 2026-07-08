@@ -387,9 +387,101 @@
         .photo-thumb {
             width: 60px; height: 60px; object-fit: cover; cursor: pointer;
             border-radius: 0; border: 1px solid #2a2a2a; transition: border-color 0.2s ease;
+            flex-shrink: 0;
         }
         body.light-mode .photo-thumb { border-color: #e0ddd8; }
         .photo-thumb:hover { border-color: #c8922a; }
+
+        /* My Rides mobile fixes */
+        #tab-rides {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+        #tab-rides > div {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+        .ride-card {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        @media (max-width: 600px) {
+            /* Rides container padding */
+            #tab-rides > div {
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+                box-sizing: border-box;
+            }
+            /* Stats bar: 2x2 grid */
+            .rides-stats-bar {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+            .rides-stats-bar > div:nth-child(2) {
+                border-right: none !important;
+            }
+            .rides-stats-bar > div:nth-child(3) {
+                border-right: none !important;
+            }
+            .rides-stats-bar > div:nth-child(1),
+            .rides-stats-bar > div:nth-child(2) {
+                border-bottom: 1px solid #2a2a2a !important;
+            }
+            body.light-mode .rides-stats-bar > div:nth-child(1),
+            body.light-mode .rides-stats-bar > div:nth-child(2) {
+                border-bottom-color: #e0ddd8 !important;
+            }
+            /* Time display */
+            .ride-card-time {
+                font-size: 1.1rem !important;
+                word-break: break-all !important;
+                min-width: 0 !important;
+            }
+            /* Photos: max 3 per row, 60x60 */
+            .ride-card-photos {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 6px !important;
+                max-width: 100% !important;
+                overflow: hidden !important;
+            }
+            .ride-card-photos img {
+                width: 60px !important;
+                height: 60px !important;
+                object-fit: cover !important;
+                flex-shrink: 0;
+                max-width: calc(33.333% - 4px) !important;
+            }
+            /* Edit/Delete buttons */
+            .ride-card-actions {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                justify-content: flex-end !important;
+                gap: 8px !important;
+            }
+            /* Ride card padding */
+            .ride-card-padding {
+                padding: 12px 0 !important;
+                box-sizing: border-box !important;
+                max-width: 100% !important;
+                overflow: hidden !important;
+            }
+        }
+        @media (max-width: 640px) {
+            .rides-stats-bar > div:nth-child(1),
+            .rides-stats-bar > div:nth-child(2) {
+                border-bottom: 1px solid #2a2a2a;
+            }
+            body.light-mode .rides-stats-bar > div:nth-child(1),
+            body.light-mode .rides-stats-bar > div:nth-child(2) {
+                border-bottom-color: #e0ddd8;
+            }
+        }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
         body.light-mode input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.3); }
         .condition-tag {
@@ -523,12 +615,50 @@
 </head>
 <body>
 
-<!-- PWA INSTALL BANNER -->
+<!-- PWA INSTALL BANNER (Android) -->
 <div class="pwa-banner" id="pwa-banner">
     <span class="pwa-banner-text">Install Col de Vence as an app for offline use</span>
     <div class="pwa-banner-actions">
         <button class="pwa-install-btn" id="pwa-install-btn">INSTALL</button>
         <button class="pwa-dismiss-btn" id="pwa-dismiss-btn" title="Dismiss">×</button>
+    </div>
+</div>
+
+<!-- iOS INSTALL BANNER -->
+<div id="ios-banner" style="
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 9991;
+    background-color: #1a1a1a;
+    border-top: 3px solid #c8922a;
+    border-radius: 16px 16px 0 0;
+    padding: 20px 20px 32px;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.6);
+    transform: translateY(100%);
+    transition: transform 0.35s ease;
+    display: none;
+">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+        <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c8922a;">Install App</div>
+        <button id="ios-banner-dismiss" style="background: none; border: none; color: #888888; font-size: 1.2rem; cursor: pointer; padding: 0 0 0 16px; line-height: 1; font-family: 'Inter', sans-serif;" title="Dismiss">×</button>
+    </div>
+    <div style="font-family: 'Inter', sans-serif; font-size: 0.82rem; color: #f0ede8; line-height: 1.6; margin-bottom: 18px;">
+        To install this app on iPhone — tap the <strong style="color: #c8922a;">Share button</strong> in Safari then select <strong style="color: #c8922a;">'Add to Home Screen'</strong>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px; justify-content: center; flex-wrap: wrap;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+            <div style="width: 44px; height: 44px; border: 2px solid #c8922a; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #0f0f0f;">
+                <span style="font-size: 1.3rem; color: #c8922a; line-height: 1;">⬆</span>
+            </div>
+            <span style="font-family: 'Montserrat', sans-serif; font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; color: #888888;">Share</span>
+        </div>
+        <div style="color: #444; font-size: 1rem; font-family: 'Montserrat', sans-serif; font-weight: 300;">→</div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+            <div style="width: 44px; height: 44px; border: 2px solid #c8922a; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #0f0f0f;">
+                <span style="font-size: 1.1rem; color: #c8922a; line-height: 1;">＋</span>
+            </div>
+            <span style="font-family: 'Montserrat', sans-serif; font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; color: #888888; text-align: center; max-width: 56px;">Add to Home</span>
+        </div>
     </div>
 </div>
 
@@ -611,18 +741,6 @@
             <div class="stat-card" style="padding: 24px 20px;">
                 <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.8rem; color: #c8922a; line-height: 1;">28:13</div>
                 <div class="form-label" style="margin: 6px 0 0; font-size: 0.62rem;">QOM</div>
-            </div>
-        </div>
-
-        <!-- PWA STATUS -->
-        <div style="margin-bottom: 40px;">
-            <div class="section-header" style="font-size: 0.85rem; margin-bottom: 16px;">App Status</div>
-            <div class="fact-card" style="padding: 20px 24px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between;">
-                <div style="font-family: 'Inter', sans-serif; font-weight: 300; font-size: 0.82rem; color: #888888; line-height: 1.6;">
-                    <span style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: #c8922a; display: block; margin-bottom: 4px;">Offline Ready</span>
-                    This app can be used without an internet connection once loaded.
-                </div>
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: #888888;" id="pwa-cache-status">Caching in progress...</div>
             </div>
         </div>
 
@@ -753,17 +871,17 @@
             </div>
         </div>
         <!-- Stats strip -->
-        <div class="stats-bar" style="display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 32px; padding: 0;">
+        <div class="stats-bar rides-stats-bar" style="display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 32px; padding: 0;">
             <div style="padding: 20px 16px; border-right: 1px solid #2a2a2a;" id="stat-strip-border-1">
                 <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.5rem; color: #c8922a;" id="stat-total-rides">0</div>
                 <div class="form-label" style="margin: 4px 0 0; font-size: 0.6rem;">Total Rides</div>
             </div>
             <div style="padding: 20px 16px; border-right: 1px solid #2a2a2a;" id="stat-strip-border-2">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.5rem; color: #c8922a;" id="stat-best-time">—</div>
+                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.5rem; color: #c8922a; word-break: break-all;" id="stat-best-time">—</div>
                 <div class="form-label" style="margin: 4px 0 0; font-size: 0.6rem;">Best Time</div>
             </div>
             <div style="padding: 20px 16px; border-right: 1px solid #2a2a2a;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.5rem; color: #c8922a;" id="stat-avg-time">—</div>
+                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.5rem; color: #c8922a; word-break: break-all;" id="stat-avg-time">—</div>
                 <div class="form-label" style="margin: 4px 0 0; font-size: 0.6rem;">Avg Time</div>
             </div>
             <div style="padding: 20px 16px;">
@@ -853,8 +971,123 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<script>
+==============================================
+// PWA — INSTALL PROMPT BANNER
 // ============================================================
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (!localStorage.getItem('pwa-dismissed')) {
+        const banner = document.getElementById('pwa-banner');
+        if (banner) {
+            // Small delay so banner doesn't flash immediately on load
+            setTimeout(() => banner.classList.add('visible'), 1500);
+        }
+    }
+});
+
+document.getElementById('pwa-install-btn').addEventListener('click', () => {
+    const banner = document.getElementById('pwa-banner');
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(choice => {
+        if (choice.outcome === 'accepted') {
+            showToast('App installed successfully');
+        }
+        deferredInstallPrompt = null;
+        if (banner) banner.classList.remove('visible');
+    });
+});
+
+document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) banner.classList.remove('visible');
+    localStorage.setItem('pwa-dismissed', '1');
+});
+
+// Hide banner if already dismissed
+if (localStorage.getItem('pwa-dismissed')) {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) banner.style.display = 'none';
+}
+
+// Hide banner if app is already installed (standalone mode)
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) banner.style.display = 'none';
+}
+=======
+// ============================================================
+// PWA — INSTALL PROMPT BANNER (Android)
+// ============================================================
+let deferredInstallPrompt = null;
+
+const _isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (!localStorage.getItem('pwa-dismissed') && !_isStandalone) {
+        const banner = document.getElementById('pwa-banner');
+        if (banner) {
+            // Small delay so banner doesn't flash immediately on load
+            setTimeout(() => banner.classList.add('visible'), 1500);
+        }
+    }
+});
+
+document.getElementById('pwa-install-btn').addEventListener('click', () => {
+    const banner = document.getElementById('pwa-banner');
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(choice => {
+        if (choice.outcome === 'accepted') {
+            showToast('App installed successfully');
+        }
+        deferredInstallPrompt = null;
+        if (banner) banner.classList.remove('visible');
+    });
+});
+
+document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) banner.classList.remove('visible');
+    localStorage.setItem('pwa-dismissed', '1');
+});
+
+// Hide Android banner if already dismissed or installed
+if (localStorage.getItem('pwa-dismissed') || _isStandalone) {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) banner.style.display = 'none';
+}
+
+// ============================================================
+// PWA — IOS INSTALL BANNER
+// ============================================================
+(function initIosBanner() {
+    const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+    if (!isIos) return;
+    if (_isStandalone) return;
+    if (localStorage.getItem('iosBannerDismissed')) return;
+
+    const banner = document.getElementById('ios-banner');
+    if (!banner) return;
+
+    // Show the banner (it starts hidden via display:none)
+    banner.style.display = 'block';
+
+    setTimeout(() => {
+        banner.style.transform = 'translateY(0)';
+    }, 2000);
+
+    document.getElementById('ios-banner-dismiss').addEventListener('click', () => {
+        banner.style.transform = 'translateY(100%)';
+        setTimeout(() => { banner.style.display = 'none'; }, 400);
+        localStorage.setItem('iosBannerDismissed', 'true');
+    });
+})();============================================================
 // STATE
 // ============================================================
 let rides = [];
@@ -1224,25 +1457,1025 @@ function renderRides() {
         ).join('');
         const weatherInfo = [ride.weather, ride.temp ? ride.temp + 'C' : ''].filter(Boolean).join(' · ');
 
-        return `<div class="ride-card" style="padding: 20px 0; display: flex; flex-direction: column; gap: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;">
-                <div style="display: flex; flex-direction: column; gap: 4px;">
+        return `<div class="ride-card ride-card-padding" style="padding: 20px 0; display: flex; flex-direction: column; gap: 10px; width: 100%; box-sizing: border-box; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; min-width: 0;">
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1;">
                     <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.7rem; letter-spacing: 0.12em; color: #888888;">${dayStr}</div>
-                    <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.1rem; letter-spacing: 0.04em; color: ${isLightMode ? '#1a1a1a' : '#f0ede8'};">${dateStr}</div>
+                    <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1rem; letter-spacing: 0.03em; color: ${isLightMode ? '#1a1a1a' : '#f0ede8'}; word-break: break-word;">${dateStr}</div>
                 </div>
-                <div style="display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; flex-shrink: 0; min-width: 0;">
                     ${isPB ? '<span class="pb-badge">BEST</span>' : ''}
-                    <div style="font-family: \'Montserrat\', sans-serif; font-weight: 800; font-size: 1.4rem; color: #c8922a; letter-spacing: 0.02em;">${ride.timeStr}</div>
+                    <div class="ride-card-time" style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.3rem; color: #c8922a; letter-spacing: 0.02em; word-break: break-all; min-width: 0;">${ride.timeStr}</div>
                 </div>
             </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
-                ${ride.distance ? `<span style="font-family:'Inter',sans-serif; font-size:0.78rem; color:#888888;">${ride.distance} km</span>` : ''}
-                ${weatherInfo ? `<span style="font-family:'Inter',sans-serif; font-size:0.78rem; color:#888888;">${weatherInfo}</span>` : ''}
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; overflow: hidden;">
+                ${ride.distance ? `<span style="font-family:'Inter',sans-serif; font-size:0.75rem; color:#888888; white-space:nowrap;">${ride.distance} km</span>` : ''}
+                ${weatherInfo ? `<span style="font-family:'Inter',sans-serif; font-size:0.75rem; color:#888888; white-space:nowrap;">${weatherInfo}</span>` : ''}
                 ${conditions}
             </div>
-            ${ride.notes ? `<div style="font-family:'Inter',sans-serif; font-size:0.8rem; font-weight:300; color:#888888; line-height:1.6; font-style:italic;">${escapeHtml(ride.notes)}</div>` : ''}
-            ${photos ? `<div style="display:flex; flex-wrap:wrap; gap:6px;">${photos}</div>` : ''}
-            <div style="display: flex; gap: 16px; justify-content: flex-end; padding-top: 4px;">
+            ${ride.notes ? `<div style="font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:300; color:#888888; line-height:1.6; font-style:italic; word-break: break-word; overflow-wrap: break-word;">${escapeHtml(ride.notes)}</div>` : ''}
+            ${photos ? `<div class="ride-card-photos" style="display:flex; flex-wrap:wrap; gap:6px; max-width:100%; overflow:hidden;">${photos}</div>` : ''}
+            <div class="ride-card-actions" style="display: flex; gap: 16px; justify-content: flex-end; padding-top: 4px; flex-wrap: wrap;">
+                <button class="btn-text-link" onclick="editRide('${ride.id}')">Edit</button>
+                <button class="btn-text-link delete" onclick="deleteRide('${ride.id}')">Delete</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ============================================================
+// MAP + ROUTE
+// ============================================================
+const fallbackWaypoints = [
+    [43.7222, 7.1068],[43.7238, 7.1062],[43.7255, 7.1048],[43.7272, 7.1032],
+    [43.7292, 7.1018],[43.7315, 7.1005],[43.7338, 7.0998],[43.7358, 7.0985],
+    [43.7378, 7.0972],[43.7395, 7.0962],[43.7412, 7.0958],[43.7432, 7.0948],
+    [43.7452, 7.0938],[43.7472, 7.0928],[43.7492, 7.0922],[43.7512, 7.0916],
+    [43.7535, 7.0918],[43.7558, 7.0916],[43.7578, 7.0912],[43.7598, 7.0910],
+    [43.7618, 7.0912],[43.7638, 7.0914],[43.7658, 7.0916],[43.7678, 7.0918],
+    [43.7698, 7.0922],[43.7718, 7.0924],[43.7738, 7.0926],[43.7758, 7.0924],
+    [43.7778, 7.0928],[43.7798, 7.0928],[43.7818, 7.0926],[43.7838, 7.0924],
+    [43.7858, 7.0922],[43.7878, 7.0924],[43.7898, 7.0922],[43.7918, 7.0920],
+    [43.7938, 7.0920],[43.7958, 7.0918],[43.7978, 7.0918],[43.7982, 7.0920]
+];
+
+const elevationData = [
+    [0, 321],[0.5, 350],[1, 390],[1.5, 425],[2, 460],[2.5, 498],[3, 530],
+    [3.5, 565],[4, 600],[4.5, 628],[5, 660],[5.5, 695],[6, 725],[6.5, 758],
+    [7, 792],[7.5, 825],[8, 860],[8.5, 892],[9, 922],[9.5, 945],[9.7, 962]
+];
+
+function gradientColor(pct) {
+    if (pct < 5) return '#4caf50';
+    if (pct < 7) return '#ff9800';
+    if (pct < 9) return '#f44336';
+    return '#9c27b0';
+}
+
+function computeGradient(pts, i) {
+    if (i === 0 || i >= pts.length - 1) return 6.5;
+    const lat1 = pts[i-1][0], lon1 = pts[i-1][1];
+    const lat2 = pts[i][0], lon2 = pts[i][1];
+    const R = 6371000;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const elev = elevationData;
+    const totalDist = 9700;
+    const fraction = i / pts.length;
+    const elevIdx = Math.min(Math.floor(fraction * (elev.length - 1)), elev.length - 2);
+    const elevGain = elev[elevIdx + 1][1] - elev[elevIdx][1];
+    const segDist = (elev[elevIdx + 1][0] - elev[elevIdx][0]) * 1000;
+    if (segDist <= 0) return 6.5;
+    return Math.abs((elevGain / segDist) * 100);
+}
+
+function bearing(lat1, lon1, lat2, lon2) {
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const y = Math.sin(dLon) * Math.cos(lat2 * Math.PI / 180);
+    const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) - Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(dLon);
+    return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
+function angleDiff(a, b) {
+    let d = Math.abs(a - b) % 360;
+    return d > 180 ? 360 - d : d;
+}
+
+function initMap() {
+    if (mapInitialized && mapInstance) {
+        mapInstance.invalidateSize();
+        return;
+    }
+
+    const mapEl = document.getElementById('map');
+    mapInstance = L.map('map', { zoomControl: true }).setView([43.760, 7.098], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(mapInstance);
+
+    mapInitialized = true;
+    drawRoute();
+    initElevationChart();
+}
+
+async function drawRoute() {
+    const loadingEl = document.getElementById('map-loading');
+    const statusEl = document.getElementById('route-status');
+
+    try {
+        const query = `[out:json][timeout:25];(way["ref"="D2"]["highway"](43.700,7.070,43.810,7.130););out body;>;out skel qt;`;
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: 'data=' + encodeURIComponent(query)
+        });
+
+        if (!response.ok) throw new Error('Overpass fetch failed');
+
+        const data = await response.json();
+        const nodes = {};
+        const ways = [];
+
+        data.elements.forEach(el => {
+            if (el.type === 'node') nodes[el.id] = [el.lat, el.lon];
+            if (el.type === 'way') ways.push(el);
+        });
+
+        if (!ways.length || Object.keys(nodes).length === 0) throw new Error('No route data');
+
+        // Merge ways into ordered polyline
+        let allPts = [];
+        ways.forEach(way => {
+            const pts = way.nodes.map(id => nodes[id]).filter(Boolean);
+            allPts = allPts.concat(pts);
+        });
+
+        // Sort south to north
+        allPts.sort((a, b) => a[0] - b[0]);
+
+        drawColoredRoute(allPts);
+        loadingEl.style.display = 'none';
+        statusEl.textContent = 'Live route data loaded';
+    } catch (err) {
+        console.warn('Using fallback route:', err);
+        drawColoredRoute(fallbackWaypoints);
+        loadingEl.style.display = 'none';
+        statusEl.textContent = 'Using approximate route';
+    }
+
+    // Add markers
+    const startIcon = L.divIcon({
+        html: `<div style="width:14px;height:14px;background:#4caf50;border:2px solid #fff;border-radius:50%;"></div>`,
+        className: '', iconAnchor: [7, 7]
+    });
+    const summitIcon = L.divIcon({
+        html: `<div style="width:14px;height:14px;background:#c8922a;border:2px solid #fff;border-radius:50%;"></div>`,
+        className: '', iconAnchor: [7, 7]
+    });
+
+    L.marker([43.722, 7.107], { icon: startIcon }).addTo(mapInstance)
+        .bindPopup('<strong style="font-family:Montserrat,sans-serif;font-size:0.75rem;letter-spacing:0.08em;">START</strong><br><span style="font-size:0.7rem;color:#888;">Vence &middot; 321m</span>');
+    L.marker([43.798, 7.092], { icon: summitIcon }).addTo(mapInstance)
+        .bindPopup('<strong style="font-family:Montserrat,sans-serif;font-size:0.75rem;letter-spacing:0.08em;">SUMMIT</strong><br><span style="font-size:0.7rem;color:#888;">Col de Vence &middot; 962m</span>');
+
+    // Distance markers
+    const totalPts = fallbackWaypoints.length;
+    [2, 4, 6, 8].forEach(km => {
+        const idx = Math.round((km / 9.7) * totalPts);
+        if (idx < totalPts) {
+            const pt = fallbackWaypoints[Math.min(idx, totalPts - 1)];
+            const distIcon = L.divIcon({
+                html: `<div style="background:#fff;color:#333;font-family:Montserrat,sans-serif;font-size:9px;font-weight:600;padding:1px 4px;border-radius:0;letter-spacing:0.05em;">${km}KM</div>`,
+                className: '', iconAnchor: [12, 8]
+            });
+            L.marker(pt, { icon: distIcon }).addTo(mapInstance);
+        }
+    });
+
+    mapInstance.invalidateSize();
+}
+
+function drawColoredRoute(pts) {
+    for (let i = 1; i < pts.length; i++) {
+        const grad = computeGradient(pts, i);
+        const color = gradientColor(grad);
+        L.polyline([pts[i-1], pts[i]], {
+            color: color, weight: 4, opacity: 0.9
+        }).addTo(mapInstance);
+    }
+
+    // Hairpin markers
+    const hairpinIcon = L.divIcon({
+        html: `<div style="width:6px;height:6px;background:#aaa;border-radius:50%;border:1px solid #fff;"></div>`,
+        className: '', iconAnchor: [3, 3]
+    });
+    for (let i = 2; i < pts.length - 2; i++) {
+        const b1 = bearing(pts[i-2][0], pts[i-2][1], pts[i-1][0], pts[i-1][1]);
+        const b2 = bearing(pts[i][0], pts[i][1], pts[i+1][0], pts[i+1][1]);
+        if (angleDiff(b1, b2) > 100) {
+            L.marker(pts[i], { icon: hairpinIcon }).addTo(mapInstance);
+        }
+    }
+}
+
+// ============================================================
+// ELEVATION CHART
+// ============================================================
+function initElevationChart() {
+    const canvas = document.getElementById('elevation-chart');
+    if (!canvas) return;
+    if (elevationChart) { elevationChart.destroy(); elevationChart = null; }
+
+    const isDark = !isLightMode;
+    const gridColor = isDark ? 'rgba(42,42,42,0.8)' : 'rgba(200,195,190,0.6)';
+    const tickColor = isDark ? '#888888' : '#666666';
+    const accentColor = isDark ? '#c8922a' : '#b07d20';
+    const fillColor = isDark ? 'rgba(200,146,42,0.3)' : 'rgba(176,125,32,0.3)';
+
+    const labels = elevationData.map(d => d[0] + 'km');
+    const data = elevationData.map(d => d[1]);
+
+    elevationChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Elevation (m)',
+                data,
+                borderColor: accentColor,
+                backgroundColor: fillColor,
+                borderWidth: 2,
+                pointRadius: 3,
+                pointBackgroundColor: accentColor,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1a1a1a',
+                    titleColor: '#f0ede8',
+                    bodyColor: '#888888',
+                    borderColor: '#2a2a2a',
+                    borderWidth: 1,
+                    titleFont: { family: 'Montserrat', weight: '600', size: 11 },
+                    bodyFont: { family: 'Inter', size: 11 },
+                    callbacks: {
+                        label: function(ctx) {
+                            const idx = ctx.dataIndex;
+                            const elev = ctx.parsed.y;
+                            const dist = elevationData[idx][0];
+                            let grad = '—';
+                            if (idx > 0) {
+                                const dElev = elevationData[idx][1] - elevationData[idx-1][1];
+                                const dDist = (elevationData[idx][0] - elevationData[idx-1][0]) * 1000;
+                                grad = ((dElev / dDist) * 100).toFixed(1) + '%';
+                            }
+                            return [`${elev}m elevation`, `Gradient: ${grad}`];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: gridColor },
+                    ticks: { color: tickColor, font: { family: 'Inter', size: 10 }, maxTicksLimit: 10 },
+                    border: { color: gridColor }
+                },
+                y: {
+                    grid: { color: gridColor },
+                    ticks: { color: tickColor, font: { family: 'Inter', size: 10 }, callback: v => v + 'm' },
+                    border: { color: gridColor },
+                    min: 280
+                }
+            }
+        }
+    });
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function formatTime(h, m, s) {
+    return [h, m, s].map(n => String(n).padStart(2, '0')).join(':');
+}
+function formatSecondsToTime(totalSec) {
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    return formatTime(h, m, s);
+}
+function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function openLightbox(src) {
+    const lb = document.getElementById('lightbox');
+    document.getElementById('lightbox-img').src = src;
+    lb.classList.add('active');
+}
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+}
+
+// Initialize tab display
+document.getElementById('tab-home').style.display = 'block';
+['tab-log', 'tab-rides', 'tab-route'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+});
+
+// ============================================================
+// PWA — MANIFEST (injected as Blob URL)
+// ============================================================
+(function injectManifest() {
+    const manifest = {
+        name: 'Col de Vence — Cycling Tracker',
+        short_name: 'Col de Vence',
+        description: 'Track your Col de Vence ascent times, conditions and ride history',
+        start_url: '.',
+        display: 'standalone',
+        background_color: '#0f0f0f',
+        theme_color: '#c8922a',
+        orientation: 'portrait-primary',
+        icons: [
+            {
+                src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%230f0f0f'/><text x='96' y='130' font-size='120' text-anchor='middle' fill='%23c8922a'>⛰</text></svg>",
+                sizes: '192x192',
+                type: 'image/svg+xml'
+            },
+            {
+                src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%230f0f0f'/><text x='256' y='360' font-size='320' text-anchor='middle' fill='%23c8922a'>⛰</text></svg>",
+                sizes: '512x512',
+                type: 'image/svg+xml'
+            }
+        ]
+    };
+    try {
+        const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = url;
+        document.head.appendChild(link);
+    } catch (e) {
+        console.warn('Manifest injection failed:', e);
+    }
+})();
+
+// ============================================================
+// PWA — SERVICE WORKER (injected as Blob URL)
+// ============================================================
+(function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+
+    const swCode = `
+const CACHE_NAME = 'col-de-vence-v1';
+const ASSETS = [
+  self.location.href,
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+  'https://cdn.jsdelivr.net/npm/chart.js'
+];
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS).catch(() => {})));
+  self.skipWaiting();
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))));
+  self.clients.claim();
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).then(res => {
+    if(res && res.status === 200 && res.type === 'basic') {
+      const clone = res.clone();
+      caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+    }
+    return res;
+  })).catch(() => caches.match(e.request)));
+});
+    `;
+
+    try {
+        const blob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(blob);
+        navigator.serviceWorker.register(swUrl, { scope: './' })
+            .then(reg => {
+                console.log('Service Worker registered:', reg.scope);
+                // Update cache status display once SW is active
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    if (newWorker) {
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'activated') {
+                                updateCacheStatus(true);
+                            }
+                        });
+                    }
+                });
+                // If already active
+                if (reg.active) {
+                    updateCacheStatus(true);
+                }
+            })
+            .catch(err => {
+                console.warn('Service Worker registration failed:', err);
+                updateCacheStatus(false);
+            });
+    } catch (e) {
+        console.warn('Service Worker blob creation failed:', e);
+        updateCacheStatus(false);
+    }
+})();
+
+function updateCacheStatus(cached) {
+    const el = document.getElementById('pwa-cache-status');
+    if (!el) return;
+    if (cached) {
+        el.textContent = 'Core assets cached';
+        el.style.color = '#4caf50';
+    } else {
+        el.textContent = 'Caching in progress...';
+    }
+}
+
+// ============================================================
+// PWA — INSTALL PROMPT BANNER
+// ============================================================
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (!localStorage.getItem('pwa-dismissed')) {
+        const banner = document.getElementById('pwa-banner');
+        if (banner) {
+            // Small delay so banner doesn't flash immediately on load
+            setTimeout(() => banner.classList.add('visible'), 1500);
+        }
+    }
+});
+
+document.getElementById('pwa-install-btn').addEventListener('click', () => {
+    const banner = document.getElementById('pwa-banner');
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(choice => {
+        if (choice.outcome === 'accepted') {
+            showToast('App installed successfully');
+        }
+        deferredInstallPrompt = null;
+        if (banner) banner.classList.remove('visible');
+    });
+});
+
+document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) banner.classList.remove('visible');
+    localStorage.setItem('pwa-dismissed', '1');
+});
+
+// Hide banner if already dismissed
+if (localStorage.getItem('pwa-dismissed')) {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) banner.style.display = 'none';
+}
+
+// Hide banner if app is already installed (standalone mode)
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) banner.style.display = 'none';
+}
+
+// ============================================================
+// PWA — OFFLINE INDICATOR
+// ============================================================
+function updateOnlineStatus() {
+    const dot = document.getElementById('online-dot');
+    const label = document.getElementById('offline-label');
+    if (!dot || !label) return;
+
+    if (navigator.onLine) {
+        dot.classList.remove('offline');
+        label.style.display = 'none';
+    } else {
+        dot.classList.add('offline');
+        label.style.display = 'block';
+    }
+}
+
+window.addEventListener('online', () => {
+    updateOnlineStatus();
+    showToast('Connection restored');
+});
+
+window.addEventListener('offline', () => {
+    updateOnlineStatus();
+    showToast('You are offline — previously loaded data is available');
+});
+
+// Set initial state
+updateOnlineStatus();
+</script>
+ 
+=====================================================
+// PWA — INSTALL PROMPT BANNER
+// ============================================================
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (!localStorage.getItem('pwa-dismissed')) {
+        const banner = document.getElementById('pwa-banner');
+        if (banner) {
+            // Small delay so banner doesn't flash immediately on load
+            setTimeout(() => banner.classList.add('visible'), 1500);
+        }
+    }
+});
+
+document.getElementById('pwa-install-btn').addEventListener('click', () => {
+    const banner = document.getElementById('pwa-banner');
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(choice => {
+        if (choice.outcome === 'accepted') {
+            showToast('App installed successfully');
+        }
+        deferredInstallPrompt = null;
+        if (banner) banner.classList.remove('visible');
+    });
+});
+
+document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) banner.classList.remove('visible');
+    localStorage.setItem('pwa-dismissed', '1');
+});
+
+// Hide banner if already dismissed
+if (localStorage.getItem('pwa-dismissed')) {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) banner.style.display = 'none';
+}
+
+// Hide banner if app is already installed (standalone mode)
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) banner.style.display = 'none';
+}
+=======
+// ============================================================
+// PWA — INSTALL PROMPT BANNER (Android)
+// ============================================================
+let deferredInstallPrompt = null;
+
+const _isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (!localStorage.getItem('pwa-dismissed') && !_isStandalone) {
+        const banner = document.getElementById('pwa-banner');
+        if (banner) {
+            // Small delay so banner doesn't flash immediately on load
+            setTimeout(() => banner.classList.add('visible'), 1500);
+        }
+    }
+});
+
+document.getElementById('pwa-install-btn').addEventListener('click', () => {
+    const banner = document.getElementById('pwa-banner');
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(choice => {
+        if (choice.outcome === 'accepted') {
+            showToast('App installed successfully');
+        }
+        deferredInstallPrompt = null;
+        if (banner) banner.classList.remove('visible');
+    });
+});
+
+document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) banner.classList.remove('visible');
+    localStorage.setItem('pwa-dismissed', '1');
+});
+
+// Hide Android banner if already dismissed or installed
+if (localStorage.getItem('pwa-dismissed') || _isStandalone) {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) banner.style.display = 'none';
+}
+
+// ============================================================
+// PWA — IOS INSTALL BANNER
+// ============================================================
+(function initIosBanner() {
+    const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+    if (!isIos) return;
+    if (_isStandalone) return;
+    if (localStorage.getItem('iosBannerDismissed')) return;
+
+    const banner = document.getElementById('ios-banner');
+    if (!banner) return;
+
+    // Show the banner (it starts hidden via display:none)
+    banner.style.display = 'block';
+
+    setTimeout(() => {
+        banner.style.transform = 'translateY(0)';
+    }, 2000);
+
+    document.getElementById('ios-banner-dismiss').addEventListener('click', () => {
+        banner.style.transform = 'translateY(100%)';
+        setTimeout(() => { banner.style.display = 'none'; }, 400);
+        localStorage.setItem('iosBannerDismissed', 'true');
+    });
+})();============================================================
+// STATE
+// ============================================================
+let rides = [];
+let currentSort = 'newest';
+let editPhotoData = [];
+let newPhotoData = [];
+let mapInstance = null;
+let mapInitialized = false;
+let elevationChart = null;
+let currentTab = 'home';
+let isLightMode = false;
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    rides = loadRides();
+    initTheme();
+    setDefaultDate();
+    updatePBStrip();
+    applyResponsiveGrid();
+    window.addEventListener('resize', applyResponsiveGrid);
+});
+
+function applyResponsiveGrid() {
+    const w = window.innerWidth;
+    const sg = document.getElementById('stats-grid-border');
+    const fg = document.getElementById('fact-grid-border');
+    if (sg) sg.style.gridTemplateColumns = w < 640 ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)';
+    if (fg) fg.style.gridTemplateColumns = w < 640 ? '1fr' : 'repeat(2, 1fr)';
+    const formGrid = document.getElementById('form-grid');
+    if (formGrid) formGrid.style.gridTemplateColumns = w < 640 ? '1fr' : '1fr 1fr';
+}
+
+// ============================================================
+// THEME
+// ============================================================
+function initTheme() {
+    const saved = localStorage.getItem('colDeVenceTheme');
+    if (saved === 'light') {
+        isLightMode = true;
+        document.body.classList.add('light-mode');
+        document.getElementById('themeToggle').textContent = 'DARK';
+        document.getElementById('themeToggleFab').textContent = '●';
+        document.getElementById('themeToggleFab').title = 'Switch to dark mode';
+    } else {
+        isLightMode = false;
+        document.body.classList.remove('light-mode');
+        document.getElementById('themeToggle').textContent = 'LIGHT';
+        document.getElementById('themeToggleFab').textContent = '○';
+        document.getElementById('themeToggleFab').title = 'Switch to light mode';
+    }
+    updateChartTheme();
+}
+
+function toggleTheme() {
+    isLightMode = !isLightMode;
+    if (isLightMode) {
+        document.body.classList.add('light-mode');
+        document.getElementById('themeToggle').textContent = 'DARK';
+        document.getElementById('themeToggleFab').textContent = '●';
+        document.getElementById('themeToggleFab').title = 'Switch to dark mode';
+        localStorage.setItem('colDeVenceTheme', 'light');
+    } else {
+        document.body.classList.remove('light-mode');
+        document.getElementById('themeToggle').textContent = 'LIGHT';
+        document.getElementById('themeToggleFab').textContent = '○';
+        document.getElementById('themeToggleFab').title = 'Switch to light mode';
+        localStorage.setItem('colDeVenceTheme', 'dark');
+    }
+    updateChartTheme();
+}
+ 
+
+function updateChartTheme() {
+    if (!elevationChart) return;
+    const isDark = !isLightMode;
+    const gridColor = isDark ? 'rgba(42,42,42,0.8)' : 'rgba(200,195,190,0.6)';
+    const tickColor = isDark ? '#888888' : '#666666';
+    const accentColor = isDark ? '#c8922a' : '#b07d20';
+    const fillColor = isDark ? 'rgba(200,146,42,0.3)' : 'rgba(176,125,32,0.3)';
+
+    elevationChart.data.datasets[0].borderColor = accentColor;
+    elevationChart.data.datasets[0].backgroundColor = fillColor;
+    elevationChart.data.datasets[0].pointBackgroundColor = accentColor;
+    elevationChart.options.scales.x.grid.color = gridColor;
+    elevationChart.options.scales.y.grid.color = gridColor;
+    elevationChart.options.scales.x.ticks.color = tickColor;
+    elevationChart.options.scales.y.ticks.color = tickColor;
+    elevationChart.update();
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(el => {
+        el.classList.remove('active');
+        el.style.display = 'none';
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(8px)';
+    });
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+
+    const targetEl = document.getElementById('tab-' + tab);
+    targetEl.style.display = 'block';
+    setTimeout(() => {
+        targetEl.classList.add('active');
+        targetEl.style.opacity = '1';
+        targetEl.style.transform = 'translateY(0)';
+    }, 10);
+
+    // Activate the matching nav button by data-tab attribute
+    const activeBtn = document.querySelector(`.nav-link[data-tab="${tab}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+        // Scroll the active tab into view within the scrollable nav
+        activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+
+    currentTab = tab;
+
+    if (tab === 'rides') {
+        renderRides();
+    }
+    if (tab === 'route') {
+        setTimeout(() => {
+            initMap();
+        }, 100);
+    }
+    if (tab === 'log') {
+        applyResponsiveGrid();
+    }
+}
+ 
+
+// ============================================================
+// LOCALSTORAGE
+// ============================================================
+function loadRides() {
+    try {
+        return JSON.parse(localStorage.getItem('colDeVenceRides')) || [];
+    } catch { return []; }
+}
+function saveRides() {
+    localStorage.setItem('colDeVenceRides', JSON.stringify(rides));
+}
+
+// ============================================================
+// FORM
+// ============================================================
+function setDefaultDate() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('ride-date').value = today;
+}
+
+function toggleCondition(btn) {
+    btn.classList.toggle('selected');
+}
+
+function getSelectedConditions() {
+    return Array.from(document.querySelectorAll('#conditions-pills .pill.selected')).map(b => b.dataset.value);
+}
+
+let photoBase64s = [];
+
+function handlePhotoSelect(input) {
+    const files = Array.from(input.files);
+    photoBase64s = [];
+    const grid = document.getElementById('photo-preview-grid');
+    grid.innerHTML = '';
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            photoBase64s.push(e.target.result);
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'photo-thumb';
+            img.onclick = () => openLightbox(e.target.result);
+            grid.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function saveRide() {
+    const date = document.getElementById('ride-date').value;
+    const hh = parseInt(document.getElementById('ride-hh').value) || 0;
+    const mm = parseInt(document.getElementById('ride-mm').value) || 0;
+    const ss = parseInt(document.getElementById('ride-ss').value) || 0;
+    const distance = parseFloat(document.getElementById('ride-distance').value) || 9.7;
+    const weather = document.getElementById('ride-weather').value;
+    const temp = document.getElementById('ride-temp').value;
+    const notes = document.getElementById('ride-notes').value;
+    const conditions = getSelectedConditions();
+    const editId = document.getElementById('edit-ride-id').value;
+
+    if (!date) { showToast('Please enter a date'); return; }
+    if (hh === 0 && mm === 0 && ss === 0) { showToast('Please enter a ride time'); return; }
+
+    const totalSeconds = hh * 3600 + mm * 60 + ss;
+    const timeStr = formatTime(hh, mm, ss);
+
+    const photos = editId ? (editPhotoData.length > 0 ? editPhotoData : (rides.find(r=>r.id===editId)||{}).photos || []) : photoBase64s;
+
+    if (editId) {
+        const idx = rides.findIndex(r => r.id === editId);
+        if (idx !== -1) {
+            rides[idx] = { ...rides[idx], date, hh, mm, ss, totalSeconds, timeStr, distance, weather, temp, notes, conditions, photos: photoBase64s.length > 0 ? photoBase64s : rides[idx].photos };
+        }
+        cancelEdit();
+        showToast('Ride updated');
+    } else {
+        const ride = {
+            id: Date.now().toString(),
+            date, hh, mm, ss, totalSeconds, timeStr, distance, weather, temp, notes, conditions,
+            photos: photoBase64s
+        };
+        rides.unshift(ride);
+        showToast('Ride saved');
+    }
+
+    saveRides();
+    updatePBStrip();
+    resetForm();
+}
+
+function resetForm() {
+    document.getElementById('ride-hh').value = '';
+    document.getElementById('ride-mm').value = '';
+    document.getElementById('ride-ss').value = '';
+    document.getElementById('ride-distance').value = '9.7';
+    document.getElementById('ride-weather').value = '';
+    document.getElementById('ride-temp').value = '';
+    document.getElementById('ride-notes').value = '';
+    document.getElementById('ride-photos').value = '';
+    document.getElementById('photo-preview-grid').innerHTML = '';
+    document.querySelectorAll('#conditions-pills .pill').forEach(p => p.classList.remove('selected'));
+    photoBase64s = [];
+    setDefaultDate();
+}
+
+function cancelEdit() {
+    document.getElementById('edit-ride-id').value = '';
+    document.getElementById('log-form-title').textContent = 'Log a Ride';
+    document.getElementById('save-btn').textContent = 'Save Ride';
+    document.getElementById('cancel-edit-btn').style.display = 'none';
+    resetForm();
+    editPhotoData = [];
+}
+
+function editRide(id) {
+    const ride = rides.find(r => r.id === id);
+    if (!ride) return;
+
+    document.getElementById('edit-ride-id').value = id;
+    document.getElementById('ride-date').value = ride.date;
+    document.getElementById('ride-hh').value = ride.hh || 0;
+    document.getElementById('ride-mm').value = ride.mm || 0;
+    document.getElementById('ride-ss').value = ride.ss || 0;
+    document.getElementById('ride-distance').value = ride.distance;
+    document.getElementById('ride-weather').value = ride.weather || '';
+    document.getElementById('ride-temp').value = ride.temp || '';
+    document.getElementById('ride-notes').value = ride.notes || '';
+
+    document.querySelectorAll('#conditions-pills .pill').forEach(p => {
+        p.classList.toggle('selected', (ride.conditions || []).includes(p.dataset.value));
+    });
+
+    const grid = document.getElementById('photo-preview-grid');
+    grid.innerHTML = '';
+    editPhotoData = ride.photos || [];
+    editPhotoData.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.className = 'photo-thumb';
+        img.onclick = () => openLightbox(src);
+        grid.appendChild(img);
+    });
+
+    document.getElementById('log-form-title').textContent = 'Edit Ride';
+    document.getElementById('save-btn').textContent = 'Update Ride';
+    document.getElementById('cancel-edit-btn').style.display = 'block';
+
+    switchTab('log');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function deleteRide(id) {
+    if (!confirm('Delete this ride?')) return;
+    rides = rides.filter(r => r.id !== id);
+    saveRides();
+    updatePBStrip();
+    renderRides();
+    showToast('Ride deleted');
+}
+
+// ============================================================
+// PERSONAL BEST
+// ============================================================
+function getBestRide() {
+    if (!rides.length) return null;
+    return rides.reduce((best, r) => (!best || r.totalSeconds < best.totalSeconds) ? r : best, null);
+}
+
+function updatePBStrip() {
+    const best = getBestRide();
+    const el = document.getElementById('pb-display');
+    if (best) {
+        const d = new Date(best.date + 'T12:00:00');
+        const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        el.textContent = best.timeStr + ' — ' + dateStr;
+    } else {
+        el.textContent = '—';
+    }
+}
+
+// ============================================================
+// RIDES LIST
+// ============================================================
+function setSort(s) {
+    currentSort = s;
+    document.querySelectorAll('.sort-pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.sort === s);
+    });
+    renderRides();
+}
+
+function getSortedRides() {
+    const sorted = [...rides];
+    if (currentSort === 'newest') sorted.sort((a,b) => new Date(b.date) - new Date(a.date));
+    else if (currentSort === 'oldest') sorted.sort((a,b) => new Date(a.date) - new Date(b.date));
+    else if (currentSort === 'fastest') sorted.sort((a,b) => a.totalSeconds - b.totalSeconds);
+    else if (currentSort === 'slowest') sorted.sort((a,b) => b.totalSeconds - a.totalSeconds);
+    return sorted;
+}
+
+function renderRides() {
+    const best = getBestRide();
+    const list = document.getElementById('rides-list');
+
+    // Update stats
+    document.getElementById('stat-total-rides').textContent = rides.length;
+    document.getElementById('stat-best-time').textContent = best ? best.timeStr : '—';
+    document.getElementById('stat-total-dist').textContent = rides.reduce((s,r) => s + (parseFloat(r.distance)||0), 0).toFixed(1);
+    if (rides.length) {
+        const avg = Math.round(rides.reduce((s,r) => s + r.totalSeconds, 0) / rides.length);
+        document.getElementById('stat-avg-time').textContent = formatSecondsToTime(avg);
+    } else {
+        document.getElementById('stat-avg-time').textContent = '—';
+    }
+
+    if (!rides.length) {
+        list.innerHTML = '<div style="text-align: center; padding: 80px 20px; font-family: \'Inter\', sans-serif; font-weight: 300; color: #888888; font-size: 0.9rem; letter-spacing: 0.04em;">No rides recorded. Begin logging your ascents.</div>';
+        return;
+    }
+
+    const sorted = getSortedRides();
+    list.innerHTML = sorted.map(ride => {
+        const isPB = best && ride.id === best.id;
+        const d = new Date(ride.date + 'T12:00:00');
+        const dayStr = d.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase();
+        const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase();
+        const conditions = (ride.conditions || []).map(c => `<span class="condition-tag">${c}</span>`).join('');
+        const photos = (ride.photos || []).slice(0, 5).map(src =>
+            `<img src="${src}" class="photo-thumb" style="width:54px;height:54px;" onclick="openLightbox('${src}')" alt="Photo">`
+        ).join('');
+        const weatherInfo = [ride.weather, ride.temp ? ride.temp + 'C' : ''].filter(Boolean).join(' · ');
+
+        return `<div class="ride-card ride-card-padding" style="padding: 20px 0; display: flex; flex-direction: column; gap: 10px; width: 100%; box-sizing: border-box; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; min-width: 0;">
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1;">
+                    <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.7rem; letter-spacing: 0.12em; color: #888888;">${dayStr}</div>
+                    <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1rem; letter-spacing: 0.03em; color: ${isLightMode ? '#1a1a1a' : '#f0ede8'}; word-break: break-word;">${dateStr}</div>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; flex-shrink: 0; min-width: 0;">
+                    ${isPB ? '<span class="pb-badge">BEST</span>' : ''}
+                    <div class="ride-card-time" style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.3rem; color: #c8922a; letter-spacing: 0.02em; word-break: break-all; min-width: 0;">${ride.timeStr}</div>
+                </div>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; overflow: hidden;">
+                ${ride.distance ? `<span style="font-family:'Inter',sans-serif; font-size:0.75rem; color:#888888; white-space:nowrap;">${ride.distance} km</span>` : ''}
+                ${weatherInfo ? `<span style="font-family:'Inter',sans-serif; font-size:0.75rem; color:#888888; white-space:nowrap;">${weatherInfo}</span>` : ''}
+                ${conditions}
+            </div>
+            ${ride.notes ? `<div style="font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:300; color:#888888; line-height:1.6; font-style:italic; word-break: break-word; overflow-wrap: break-word;">${escapeHtml(ride.notes)}</div>` : ''}
+            ${photos ? `<div class="ride-card-photos" style="display:flex; flex-wrap:wrap; gap:6px; max-width:100%; overflow:hidden;">${photos}</div>` : ''}
+            <div class="ride-card-actions" style="display: flex; gap: 16px; justify-content: flex-end; padding-top: 4px; flex-wrap: wrap;">
                 <button class="btn-text-link" onclick="editRide('${ride.id}')">Edit</button>
                 <button class="btn-text-link delete" onclick="deleteRide('${ride.id}')">Delete</button>
             </div>
