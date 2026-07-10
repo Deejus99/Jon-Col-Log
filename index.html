@@ -3,1504 +3,1561 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Col de Vence — Climb Tracker</title>
+    <title>Col de Vence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="theme-color" content="#0f0f0f">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Col de Vence">
-    <meta name="theme-color" content="#c8922a">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%230f0f0f'/><text x='96' y='130' font-size='100' text-anchor='middle' fill='%23c8922a'>⛰</text></svg>">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230f0f0f'/><polygon points='50,15 80,75 20,75' fill='none' stroke='%23c8922a' stroke-width='4'/><circle cx='50' cy='82' r='6' fill='none' stroke='%23c8922a' stroke-width='3'/></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f0f0f;
-            color: #f0ede8;
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-            margin: 0;
-            padding: 0;
+        *, *::before, *::after { box-sizing: border-box; }
+        :root {
+            --bg: #0f0f0f;
+            --card: #1a1a1a;
+            --border: #2a2a2a;
+            --accent: #c8922a;
+            --text: #f0ede8;
+            --muted: #888888;
+            --input-bg: #222222;
         }
         body.light-mode {
-            background-color: #f5f2ee;
-            color: #1a1a1a;
+            --bg: #f5f5f0;
+            --card: #ffffff;
+            --border: #e0e0e0;
+            --text: #1a1a1a;
+            --muted: #666666;
+            --input-bg: #f0f0ec;
         }
-        .surface { background-color: #141414; transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
-        .surface-2 { background-color: #1a1a1a; transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
-        body.light-mode .surface { background-color: #ffffff; }
-        body.light-mode .surface-2 { background-color: #ffffff; }
-        .border-theme { border-color: #2a2a2a; transition: border-color 0.3s ease; }
-        body.light-mode .border-theme { border-color: #e0ddd8; }
-        .text-primary { color: #f0ede8; transition: color 0.3s ease; }
-        body.light-mode .text-primary { color: #1a1a1a; }
-        .text-muted { color: #888888; transition: color 0.3s ease; }
-        body.light-mode .text-muted { color: #666666; }
-        .accent { color: #c8922a; transition: color 0.3s ease; }
-        body.light-mode .accent { color: #b07d20; }
-        .nav-bar {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            background-color: #0a0a0a;
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            transition: background 0.2s, color 0.2s;
+        }
+        h1, h2, h3, h4, .montserrat { font-family: 'Montserrat', sans-serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        #nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #0f0f0f;
             border-bottom: 1px solid #2a2a2a;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-        body.light-mode .nav-bar {
-            background-color: #ffffff;
-            border-bottom: 1px solid #e0ddd8;
-        }
-        /* Nav inner scroll container */
-        .nav-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
+            z-index: 1000;
             height: 56px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            position: relative;
         }
-        .nav-links-scroll {
+        .nav-inner {
             display: flex;
             align-items: center;
-            gap: 28px;
-            flex-shrink: 0;
+            width: 100%;
+            padding: 0 16px;
+            gap: 0;
         }
-        .nav-link {
+        .nav-tabs-wrap {
+            display: flex;
+            overflow-x: auto;
+            flex: 1;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .nav-tabs-wrap::-webkit-scrollbar { display: none; }
+        .nav-tab {
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #888;
             font-family: 'Montserrat', sans-serif;
+            font-size: 11px;
             font-weight: 600;
-            font-size: 0.75rem;
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            color: #888888;
-            padding: 0 1rem;
+            padding: 0 18px;
             height: 56px;
-            line-height: 56px;
-            padding-bottom: 0;
-            border-bottom: 2px solid transparent;
             cursor: pointer;
-            transition: color 0.2s ease, border-color 0.2s ease;
-            text-decoration: none;
-            background: none; border-top: none; border-left: none; border-right: none;
             white-space: nowrap;
-            flex-shrink: 0;
-            display: inline-flex;
-            align-items: center;
-            min-height: 44px;
-            box-sizing: border-box;
+            transition: color 0.2s, border-color 0.2s;
+            border-radius: 0;
         }
-        .nav-link:hover { color: #f0ede8; }
-        body.light-mode .nav-link:hover { color: #1a1a1a; }
-        .nav-link.active { color: #c8922a; border-bottom-color: #c8922a; }
-        body.light-mode .nav-link.active { color: #b07d20; border-bottom-color: #b07d20; }
-        /* Desktop theme toggle (inside nav) */
-        .theme-toggle {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            font-size: 0.7rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: #888888;
+        .nav-tab:hover { color: #c8922a; }
+        .nav-tab.active { color: #c8922a; border-bottom-color: #c8922a; }
+        .nav-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .theme-btn-desktop {
             background: none;
             border: 1px solid #2a2a2a;
-            padding: 4px 10px;
+            color: #888;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 6px 12px;
             cursor: pointer;
             border-radius: 0;
-            transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
-            flex-shrink: 0;
+            transition: color 0.2s, border-color 0.2s;
+            white-space: nowrap;
         }
-        .theme-toggle:hover { color: #f0ede8; border-color: #888888; }
-        body.light-mode .theme-toggle { color: #666666; border-color: #d0cdc8; }
-        body.light-mode .theme-toggle:hover { color: #1a1a1a; border-color: #666666; }
-        /* Mobile-only floating theme toggle */
-        .theme-toggle-fab {
-            display: none;
-            position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            z-index: 1001;
-            width: 44px;
-            height: 44px;
+        .theme-btn-desktop:hover { color: #c8922a; border-color: #c8922a; }
+        .online-dot {
+            width: 8px; height: 8px;
             border-radius: 50%;
-            background-color: #c8922a;
-            color: #000000;
+            background: #4caf50;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+        .online-dot.offline { background: #888; }
+        .theme-btn-mobile {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #c8922a;
             border: none;
             cursor: pointer;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 800;
-            font-size: 1rem;
-            line-height: 1;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            z-index: 9999;
+            display: none;
             align-items: center;
             justify-content: center;
+            font-size: 18px;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 4px 20px rgba(200,146,42,0.4);
         }
-        .theme-toggle-fab:hover { background-color: #d9a33d; box-shadow: 0 6px 20px rgba(0,0,0,0.6); }
-        body.light-mode .theme-toggle-fab { background-color: #b07d20; }
-        body.light-mode .theme-toggle-fab:hover { background-color: #c8922a; }
-        /* Mobile nav adjustments */
-        @media (max-width: 768px) {
-            .nav-inner {
-                padding: 0 0 0 16px;
-                gap: 8px;
-                overflow: hidden;
-            }
-            .nav-wordmark-wrap {
-                flex-shrink: 0;
-            }
-            .nav-links-scroll {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                scrollbar-width: none;
-                gap: 0;
-                flex: 1;
-                min-width: 0;
-            }
-            .nav-links-scroll::-webkit-scrollbar {
-                display: none;
-            }
-            /* Fade hint on the right edge */
-            .nav-links-scroll-wrap {
-                position: relative;
-                flex: 1;
-                min-width: 0;
-                overflow: hidden;
-            }
-            .nav-links-scroll-wrap::after {
-                content: '';
-                position: absolute;
-                top: 0; right: 0; bottom: 0;
-                width: 32px;
-                pointer-events: none;
-                background: linear-gradient(to right, transparent, #0a0a0a);
-                transition: background 0.3s ease;
-            }
-            body.light-mode .nav-links-scroll-wrap::after {
-                background: linear-gradient(to right, transparent, #ffffff);
-            }
-            /* Hide desktop theme toggle on mobile */
-            .theme-toggle { display: none; }
-            /* Show FAB on mobile */
-            .theme-toggle-fab { display: inline-flex; }
-            /* Shorten tab labels on mobile via data attribute */
-            .nav-link[data-mobile-label]::before {
-                content: attr(data-mobile-label);
-            }
-            .nav-link[data-mobile-label] .nav-label-full {
-                display: none;
-            }
+        @media (max-width: 767px) {
+            .theme-btn-desktop { display: none !important; }
+            .theme-btn-mobile { display: flex !important; }
+            .nav-tab { font-size: 10px; padding: 0 14px; }
         }
-        @media (min-width: 769px) {
-            .nav-links-scroll-wrap {
-                position: relative;
-                flex-shrink: 0;
-            }
-            .nav-link[data-mobile-label] .nav-label-full {
-                display: inline;
-            }
+        @media (min-width: 768px) {
+            .theme-btn-mobile { display: none !important; }
         }
- 
-        .tab-content { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.2s ease, transform 0.2s ease; }
-        .tab-content.active { display: block; opacity: 1; transform: translateY(0); }
-        .hero-section {
-            background: linear-gradient(135deg, #0f0f0f 0%, #1c1410 100%);
+        #page-content {
+            margin-top: 56px;
+            padding: 0;
         }
-        .stat-card {
-            background-color: #141414;
-            border: 1px solid #2a2a2a;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
         }
-        body.light-mode .stat-card { background-color: #ffffff; border-color: #e0ddd8; }
-        .fact-card {
-            background-color: #141414;
-            border: 1px solid #2a2a2a;
-            border-radius: 0;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
+        .section-pad { padding: 32px 24px; }
+        @media (max-width: 767px) { .section-pad { padding: 20px 16px; } }
+        .gold { color: #c8922a; }
+        .muted { color: var(--muted); }
+        .label-small {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
         }
-        body.light-mode .fact-card { background-color: #ffffff; border-color: #e0ddd8; }
-        .pb-strip {
-            background-color: #141414;
-            border-left: 4px solid #c8922a;
-            border-top: 1px solid #2a2a2a;
-            border-right: 1px solid #2a2a2a;
-            border-bottom: 1px solid #2a2a2a;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
+        .stat-number {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 28px;
+            color: #c8922a;
+            line-height: 1;
         }
-        body.light-mode .pb-strip { background-color: #ffffff; border-top-color: #e0ddd8; border-right-color: #e0ddd8; border-bottom-color: #e0ddd8; border-left-color: #b07d20; }
-        .form-input {
-            background-color: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            color: #f0ede8;
+        input, select, textarea {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
             font-family: 'Inter', sans-serif;
-            font-size: 0.875rem;
+            font-size: 14px;
             padding: 10px 12px;
             width: 100%;
             border-radius: 0;
             outline: none;
-            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+            transition: border-color 0.2s;
         }
-        body.light-mode .form-input { background-color: #ffffff; border-color: #d0cdc8; color: #1a1a1a; }
-        .form-input:focus { border-color: #c8922a; }
-        body.light-mode .form-input:focus { border-color: #b07d20; }
-        .form-input option { background-color: #1a1a1a; }
-        body.light-mode .form-input option { background-color: #ffffff; }
-        .form-label {
+        input:focus, select:focus, textarea:focus { border-color: #c8922a; }
+        select option { background: #1a1a1a; color: #f0ede8; }
+        .btn-gold {
+            background: #c8922a;
+            color: #000;
             font-family: 'Montserrat', sans-serif;
             font-weight: 600;
-            font-size: 0.7rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: #888888;
-            display: block;
-            margin-bottom: 6px;
-            transition: color 0.3s ease;
-        }
-        body.light-mode .form-label { color: #666666; }
-        .btn-primary {
-            background-color: #c8922a;
-            color: #000000;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 13px;
             letter-spacing: 0.12em;
             text-transform: uppercase;
             border: none;
-            border-radius: 0;
             padding: 14px 24px;
             cursor: pointer;
+            border-radius: 0;
             width: 100%;
-            transition: background-color 0.2s ease;
+            transition: background 0.2s;
         }
-        body.light-mode .btn-primary { background-color: #b07d20; }
-        .btn-primary:hover { background-color: #d9a33d; }
-        body.light-mode .btn-primary:hover { background-color: #c8922a; }
-        .pill {
+        .btn-gold:hover { background: #d9a030; }
+        .pill-toggle {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--muted);
             font-family: 'Montserrat', sans-serif;
+            font-size: 10px;
             font-weight: 600;
-            font-size: 0.65rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            padding: 5px 12px;
-            border-radius: 0;
-            cursor: pointer;
-            border: 1px solid #2a2a2a;
-            background-color: #1a1a1a;
-            color: #888888;
-            transition: all 0.2s ease;
-        }
-        body.light-mode .pill { background-color: #f0ede8; border-color: #d0cdc8; color: #444444; }
-        .pill.selected { background-color: #c8922a; border-color: #c8922a; color: #000000; }
-        body.light-mode .pill.selected { background-color: #b07d20; border-color: #b07d20; color: #ffffff; }
-        .ride-card {
-            background-color: #141414;
-            border-bottom: 1px solid #2a2a2a;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-        body.light-mode .ride-card { background-color: #ffffff; border-bottom-color: #e0ddd8; }
-        .ride-card:first-child { border-top: 1px solid #2a2a2a; }
-        body.light-mode .ride-card:first-child { border-top-color: #e0ddd8; }
-        .pb-badge {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            font-size: 0.6rem;
-            letter-spacing: 0.1em;
-            color: #c8922a;
-            border: 1px solid #c8922a;
-            padding: 2px 6px;
-            border-radius: 0;
-        }
-        body.light-mode .pb-badge { color: #b07d20; border-color: #b07d20; }
-        .sort-pill {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            font-size: 0.65rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            padding: 4px 10px;
-            border-radius: 0;
-            cursor: pointer;
-            border: 1px solid #2a2a2a;
-            background-color: transparent;
-            color: #888888;
-            transition: all 0.2s ease;
-        }
-        body.light-mode .sort-pill { border-color: #d0cdc8; }
-        .sort-pill.active { border-color: #c8922a; color: #c8922a; }
-        body.light-mode .sort-pill.active { border-color: #b07d20; color: #b07d20; }
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background-color: #1a1a1a;
-            color: #f0ede8;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            font-size: 0.75rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            padding: 12px 20px;
-            border-left: 3px solid #c8922a;
-            z-index: 9999;
-            border-radius: 0;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.2s ease, transform 0.2s ease;
-        }
-        .toast.show { opacity: 1; transform: translateY(0); }
-        .lightbox-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.92);
-            z-index: 9998; display: none; align-items: center; justify-content: center;
-        }
-        .lightbox-overlay.active { display: flex; }
-        .lightbox-overlay img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 0; }
-        #map { height: 500px; border-radius: 0; }
-        .leaflet-container { background: #1a1a1a; }
-        body.light-mode .leaflet-container { background: #f5f2ee; }
-        .gradient-legend {
-            background-color: #141414;
-            border: 1px solid #2a2a2a;
-            padding: 10px 14px;
-            border-radius: 0;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-        body.light-mode .gradient-legend { background-color: #ffffff; border-color: #e0ddd8; }
-        .section-header {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 800;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: #f0ede8;
-            transition: color 0.3s ease;
-        }
-        body.light-mode .section-header { color: #1a1a1a; }
-        .stats-bar {
-            background-color: #141414;
-            border-top: 1px solid #2a2a2a;
-            border-bottom: 1px solid #2a2a2a;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-        body.light-mode .stats-bar { background-color: #ffffff; border-color: #e0ddd8; }
-        .photo-thumb {
-            width: 60px; height: 60px; object-fit: cover; cursor: pointer;
-            border-radius: 0; border: 1px solid #2a2a2a; transition: border-color 0.2s ease;
-        }
-        body.light-mode .photo-thumb { border-color: #e0ddd8; }
-        .photo-thumb:hover { border-color: #c8922a; }
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
-        body.light-mode input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.3); }
-        .condition-tag {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            font-size: 0.6rem;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            padding: 2px 7px;
-            background-color: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            color: #888888;
-            border-radius: 0;
-            transition: all 0.3s ease;
-        }
-        body.light-mode .condition-tag { background-color: #f0ede8; border-color: #d0cdc8; color: #666666; }
-        .wordmark {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 800;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            color: #c8922a;
-            transition: color 0.3s ease;
-        }
-        body.light-mode .wordmark { color: #b07d20; }
-        .main-content { padding-top: 56px; }
-        .btn-text-link {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            font-size: 0.65rem;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: #888888;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 2px 0;
-            transition: color 0.2s ease;
-            border-radius: 0;
-        }
-        .btn-text-link:hover { color: #c8922a; }
-        body.light-mode .btn-text-link:hover { color: #b07d20; }
-        .btn-text-link.delete:hover { color: #ef4444; }
-
-        /* PWA Install Banner */
-        .pwa-banner {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            z-index: 9990;
-            background-color: #c8922a;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            gap: 12px;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-        }
-        .pwa-banner.visible { transform: translateY(0); }
-        .pwa-banner-text {
-            font-family: 'Inter', sans-serif;
-            font-size: 0.78rem;
-            font-weight: 500;
-            color: #0f0f0f;
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .pwa-banner-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-        .pwa-install-btn {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            font-size: 0.7rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            background-color: #0f0f0f;
-            color: #c8922a;
-            border: none;
             padding: 7px 14px;
             cursor: pointer;
             border-radius: 0;
-            transition: background-color 0.2s ease;
+            transition: all 0.15s;
+            user-select: none;
         }
-        .pwa-install-btn:hover { background-color: #1a1a1a; }
-        .pwa-dismiss-btn {
+        .pill-toggle.selected { background: #c8922a; color: #000; border-color: #c8922a; }
+        .pill-toggle:hover:not(.selected) { border-color: #c8922a; color: #c8922a; }
+        .sort-pill {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--muted);
             font-family: 'Montserrat', sans-serif;
+            font-size: 10px;
             font-weight: 600;
-            font-size: 1rem;
-            color: #0f0f0f;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px 6px;
-            line-height: 1;
-            opacity: 0.7;
-            transition: opacity 0.2s ease;
-        }
-        .pwa-dismiss-btn:hover { opacity: 1; }
-
-        /* Offline indicator */
-        .online-indicator {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            flex-shrink: 0;
-        }
-        .online-dot {
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            background-color: #4caf50;
-            flex-shrink: 0;
-            transition: background-color 0.3s ease;
-        }
-        .online-dot.offline { background-color: #c8922a; }
-        .offline-label {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            font-size: 0.6rem;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: #c8922a;
-            display: none;
-            transition: color 0.3s ease;
+            padding: 7px 14px;
+            cursor: pointer;
+            border-radius: 0;
+            transition: all 0.15s;
         }
-        body.light-mode .offline-label { color: #b07d20; }
-        body.light-mode .online-dot.offline { background-color: #b07d20; }
+        .sort-pill.active { background: #c8922a; color: #000; border-color: #c8922a; }
+        .sort-pill:hover:not(.active) { border-color: #c8922a; color: #c8922a; }
+        .ride-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 20px;
+            transition: border-color 0.2s;
+            overflow-x: hidden;
+            min-width: 0;
+            word-break: break-word;
+            box-sizing: border-box;
+        }
+        .ride-card:hover { border-color: #c8922a; }
+ 
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            right: 24px;
+            background: #1a1a1a;
+            color: #f0ede8;
+            border-left: 3px solid #c8922a;
+            padding: 14px 20px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            z-index: 99999;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.2s, transform 0.2s;
+            pointer-events: none;
+            max-width: 300px;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.92);
+            z-index: 99998;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .lightbox.open { display: flex; }
+        .lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; }
+        #map { height: 500px; width: 100%; background: #1a1a1a; }
+        .install-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1a1a1a;
+            border-top: 1px solid #c8922a;
+            padding: 16px 20px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 9990;
+            gap: 12px;
+        }
+        .install-banner.show { display: flex; }
+        .ios-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1a1a1a;
+            border-top: 1px solid #c8922a;
+            padding: 16px 20px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 9991;
+            gap: 12px;
+        }
+        .ios-banner.show { display: flex; }
+        .photo-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .photo-preview img { width: 80px; height: 80px; object-fit: cover; cursor: pointer; border: 1px solid var(--border); }
+        .thumb-small { width: 60px; height: 60px; object-fit: cover; cursor: pointer; border: 1px solid var(--border); flex-shrink: 0; }
+        @media (max-width: 599px) {
+            .thumb-small { width: 60px; height: 60px; }
+        }
+ 
+        .pb-badge {
+            background: #c8922a;
+            color: #000;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            display: inline-block;
+        }
+        .hero-always-dark {
+            background: #0f0f0f !important;
+            color: #f0ede8 !important;
+        }
+        .fact-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 24px;
+        }
+        .fact-card p {
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--muted);
+            margin: 0;
+        }
+        .fact-number {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 22px;
+            color: #c8922a;
+            margin-bottom: 4px;
+        }
+        .elevation-chart-wrap {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 16px;
+            margin-top: 0;
+        }
+        .gradient-legend {
+            background: rgba(15,15,15,0.9);
+            border: 1px solid #2a2a2a;
+            padding: 10px 14px;
+        }
+        .time-inputs { display: flex; gap: 8px; align-items: flex-start; }
+        .time-input-wrap { flex: 1; text-align: center; }
+        .time-input-wrap input { text-align: center; }
+        .conditions-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+        @media (max-width: 767px) {
+            .stat-number { font-size: 22px; }
+            .fact-card { padding: 16px; }
+        }
+        .section-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 22px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            color: var(--text);
+        }
+        .form-label {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+            display: block;
+            margin-bottom: 8px;
+        }
+        .form-group { margin-bottom: 20px; }
+        .divider { height: 1px; background: var(--border); margin: 0; }
+        .route-stat-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0;
+        }
+        .route-stat-item {
+            padding: 16px 24px;
+            border-right: 1px solid var(--border);
+            flex: 1;
+            min-width: 120px;
+        }
+        .route-stat-item:last-child { border-right: none; }
+        @media (max-width: 767px) {
+            .route-stat-item { min-width: 100px; border-bottom: 1px solid var(--border); }
+        }
     </style>
 </head>
 <body>
 
-<!-- PWA INSTALL BANNER -->
-<div class="pwa-banner" id="pwa-banner">
-    <span class="pwa-banner-text">Install Col de Vence as an app for offline use</span>
-    <div class="pwa-banner-actions">
-        <button class="pwa-install-btn" id="pwa-install-btn">INSTALL</button>
-        <button class="pwa-dismiss-btn" id="pwa-dismiss-btn" title="Dismiss">×</button>
-    </div>
-</div>
-
-<!-- FLOATING THEME TOGGLE (mobile only) -->
-<button class="theme-toggle-fab" id="themeToggleFab" onclick="toggleTheme()" aria-label="Toggle theme">○</button>
-
-<!-- NAV -->
-<nav class="nav-bar">
+<!-- NAV BAR -->
+<nav id="nav-bar">
     <div class="nav-inner">
-        <div class="nav-wordmark-wrap" style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-            <div class="online-indicator" id="online-indicator">
-                <div class="online-dot" id="online-dot"></div>
-                <span class="offline-label" id="offline-label">Offline</span>
-            </div>
-            <div class="wordmark">Col de Vence</div>
+        <div class="nav-tabs-wrap">
+            <button class="nav-tab active" id="tab-home" onclick="showTab('home')">
+                <span class="hidden md:inline">Home</span>
+                <span class="md:hidden">Home</span>
+            </button>
+            <button class="nav-tab" id="tab-log" onclick="showTab('log')">
+                <span class="hidden md:inline">Log Ride</span>
+                <span class="md:hidden">Log</span>
+            </button>
+            <button class="nav-tab" id="tab-rides" onclick="showTab('rides')">
+                <span class="hidden md:inline">My Rides</span>
+                <span class="md:hidden">Rides</span>
+            </button>
+            <button class="nav-tab" id="tab-route" onclick="showTab('route')">
+                <span class="hidden md:inline">Route</span>
+                <span class="md:hidden">Route</span>
+            </button>
         </div>
-        <div class="nav-links-scroll-wrap">
-            <div class="nav-links-scroll" id="nav-links-scroll">
-                <button class="nav-link active" onclick="switchTab('home')" data-tab="home" data-mobile-label="HOME"><span class="nav-label-full">Home</span></button>
-                <button class="nav-link" onclick="switchTab('log')" data-tab="log" data-mobile-label="LOG"><span class="nav-label-full">Log Ride</span></button>
-                <button class="nav-link" onclick="switchTab('rides')" data-tab="rides" data-mobile-label="RIDES"><span class="nav-label-full">My Rides</span></button>
-                <button class="nav-link" onclick="switchTab('route')" data-tab="route" data-mobile-label="ROUTE"><span class="nav-label-full">Route</span></button>
-            </div>
+        <div class="nav-right">
+            <span class="online-dot" id="online-dot" title="Online"></span>
+            <button class="theme-btn-desktop" onclick="toggleTheme()" id="theme-btn-desktop">Light</button>
         </div>
-        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">DARK</button>
     </div>
 </nav>
+
+<!-- MOBILE THEME BUTTON -->
+<button class="theme-btn-mobile" onclick="toggleTheme()" id="theme-btn-mobile" title="Toggle theme">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/>
+        <line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/>
+        <line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+</button>
+
+<!-- PAGE CONTENT -->
+<div id="page-content">
+
+    <!-- TAB: HOME -->
+    <div id="tab-content-home" class="tab-content active">
+        <!-- Hero -->
+        <div class="hero-always-dark" style="padding: 64px 24px 48px; text-align: center; border-bottom: 1px solid #2a2a2a;">
+            <div style="font-family:'Montserrat',sans-serif; font-weight:800; font-size:clamp(36px,8vw,80px); letter-spacing:0.06em; text-transform:uppercase; color:#f0ede8; line-height:1; margin-bottom:16px;">Col de Vence</div>
+            <div style="font-family:'Montserrat',sans-serif; font-weight:300; font-size:clamp(12px,2.5vw,16px); letter-spacing:0.25em; text-transform:uppercase; color:#c8922a;">Alpes-Maritimes &middot; 962m &middot; Cat. 1</div>
+        </div>
+
+            <!-- Personal Best Strip -->
+        <div class="section-pad" style="max-width:1100px; margin:0 auto;">
+            <div style="border-left:4px solid #c8922a; padding:16px 20px; background:var(--card); border-top:1px solid var(--border); border-right:1px solid var(--border); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:40px; margin-top:0;">
+ 
+                <span class="label-small">Your Best Time</span>
+                <span id="home-pb" style="font-family:'Montserrat',sans-serif; font-weight:800; font-size:24px; color:#c8922a;">—</span>
+            </div>
+
+            <!-- Stats Grid -->
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); margin-bottom:40px;" id="stats-grid">
+                <div style="background:var(--card); padding:20px; text-align:center;">
+                    <div class="stat-number">9.7 km</div>
+                    <div class="label-small" style="margin-top:6px;">Distance</div>
+                </div>
+                <div style="background:var(--card); padding:20px; text-align:center;">
+                    <div class="stat-number">764 m</div>
+                    <div class="label-small" style="margin-top:6px;">Elevation Gain</div>
+                </div>
+                <div style="background:var(--card); padding:20px; text-align:center;">
+                    <div class="stat-number">6.5%</div>
+                    <div class="label-small" style="margin-top:6px;">Avg Gradient</div>
+                </div>
+                <div style="background:var(--card); padding:20px; text-align:center;">
+                    <div class="stat-number">962 m</div>
+                    <div class="label-small" style="margin-top:6px;">Summit</div>
+                </div>
+                <div style="background:var(--card); padding:20px; text-align:center;">
+                    <div class="stat-number">321 m</div>
+                    <div class="label-small" style="margin-top:6px;">Start Altitude</div>
+                </div>
+                <div style="background:var(--card); padding:20px; text-align:center;">
+                    <div class="stat-number">~11%</div>
+                    <div class="label-small" style="margin-top:6px;">Max Gradient</div>
+                </div>
+                <div style="background:var(--card); padding:20px; text-align:center;">
+                    <div class="stat-number">23:58</div>
+                    <div class="label-small" style="margin-top:6px;">KOM</div>
+                </div>
+                <div style="background:var(--card); padding:20px; text-align:center;">
+                    <div class="stat-number">28:13</div>
+                    <div class="label-small" style="margin-top:6px;">QOM</div>
+                </div>
+            </div>
+
+            <!-- The Climb section -->
+            <div class="section-title">The Climb</div>
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;" id="facts-grid">
+                <div class="fact-card">
+                    <p>Col de Vence rises from the medieval hilltop town of Vence at 321m to its summit at 962m — a true Category 1 ascent across 9.7 kilometres.</p>
+                </div>
+                <div class="fact-card">
+                    <p>Paris-Nice, the Race to the Sun, has featured the Col de Vence as both a summit finish and an intermediate climb on the road to the Côte d'Azur.</p>
+                </div>
+                <div class="fact-card">
+                    <p>Pro teams including INEOS Grenadiers and AG2R Citroën use the Col de Vence for training camps, drawn by its proximity to Nice and consistent road conditions.</p>
+                </div>
+                <div class="fact-card">
+                    <p>The Strava KOM stands at 23 minutes and 58 seconds — an average speed of 24.3 km/h sustained across a 6.5% mean gradient.</p>
+                </div>
+                <div class="fact-card">
+                    <p>From the summit on a clear day, the panorama stretches across the Var valley to the full arc of the Mediterranean coastline.</p>
+                </div>
+                <div class="fact-card">
+                    <p>The D2 road surface is well-maintained, wide, and generally low-traffic — making the Col de Vence accessible year-round except during rare winter closures.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: LOG RIDE -->
+    <div id="tab-content-log" class="tab-content">
+        <div class="section-pad" style="max-width:900px; margin:0 auto;">
+            <div class="section-title" id="log-title">Log a Ride</div>
+            <form id="ride-form" onsubmit="saveRide(event)">
+                <input type="hidden" id="edit-id" value="">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px 32px;" id="form-grid">
+
+                    <div class="form-group">
+                        <label class="form-label">Date</label>
+                        <input type="date" id="f-date">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Time (HH / MM / SS)</label>
+                        <div class="time-inputs">
+                            <div class="time-input-wrap">
+                                <input type="number" id="f-hours" min="0" max="23" placeholder="00">
+                                <div class="label-small" style="margin-top:4px; text-align:center;">HH</div>
+                            </div>
+                            <div class="time-input-wrap">
+                                <input type="number" id="f-minutes" min="0" max="59" placeholder="00">
+                                <div class="label-small" style="margin-top:4px; text-align:center;">MM</div>
+                            </div>
+                            <div class="time-input-wrap">
+                                <input type="number" id="f-seconds" min="0" max="59" placeholder="00">
+                                <div class="label-small" style="margin-top:4px; text-align:center;">SS</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Distance (km)</label>
+                        <input type="number" id="f-distance" step="0.1" value="9.7">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Weather</label>
+                        <select id="f-weather">
+                            <option value="Sunny">Sunny</option>
+                            <option value="Partly Cloudy">Partly Cloudy</option>
+                            <option value="Overcast">Overcast</option>
+                            <option value="Rain">Rain</option>
+                            <option value="Wind">Wind</option>
+                            <option value="Cold">Cold</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Temp (°C)</label>
+                        <input type="number" id="f-temp" placeholder="20">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Conditions</label>
+                    <div class="conditions-wrap" id="conditions-wrap">
+                        <button type="button" class="pill-toggle" data-val="Fresh" onclick="toggleCondition(this)">Fresh</button>
+                        <button type="button" class="pill-toggle" data-val="Tired" onclick="toggleCondition(this)">Tired</button>
+                        <button type="button" class="pill-toggle" data-val="Hangover" onclick="toggleCondition(this)">Hangover</button>
+                        <button type="button" class="pill-toggle" data-val="Injured" onclick="toggleCondition(this)">Injured</button>
+                        <button type="button" class="pill-toggle" data-val="Race Effort" onclick="toggleCondition(this)">Race Effort</button>
+                        <button type="button" class="pill-toggle" data-val="Recovery" onclick="toggleCondition(this)">Recovery</button>
+                        <button type="button" class="pill-toggle" data-val="Headwind" onclick="toggleCondition(this)">Headwind</button>
+                        <button type="button" class="pill-toggle" data-val="Tailwind" onclick="toggleCondition(this)">Tailwind</button>
+                        <button type="button" class="pill-toggle" data-val="Training Block" onclick="toggleCondition(this)">Training Block</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <textarea id="f-notes" rows="4" placeholder="How did it feel? Any details worth remembering..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Photos</label>
+                    <input type="file" id="f-photos" multiple accept="image/*" onchange="previewPhotos(this)">
+                    <div class="photo-preview" id="photo-preview"></div>
+                    <div id="existing-photos" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;"></div>
+                </div>
+
+                <button type="submit" class="btn-gold" id="save-btn">Save Ride</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TAB: MY RIDES -->
+    <div id="tab-content-rides" class="tab-content">
+        <div class="section-pad" style="max-width:1000px; margin:0 auto;">
+            <div class="section-title">My Rides</div>
+
+            <!-- Summary Stats -->
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); margin-bottom:32px; overflow-x:hidden;" id="rides-summary">
+ 
+                <div style="background:var(--card); padding:20px; text-align:center;">
+                    <div class="stat-number" id="sum-total">0</div>
+                    <div class="label-small" style="margin-top:6px;">Total Rides</div>
+                </div>
+                <div style="background:var(--card); padding:20px; text-align:center;">
+                    <div class="stat-number" id="sum-best">—</div>
+                    <div class="label-small" style="margin-top:6px;">Best Time</div>
+                </div>
+                <div style="background:var(--card); padding:20px; text-align:center;">
+                    <div class="stat-number" id="sum-avg">—</div>
+                    <div class="label-small" style="margin-top:6px;">Avg Time</div>
+                </div>
+                <div style="background:var(--card); padding:20px; text-align:center;">
+                    <div class="stat-number" id="sum-dist">0</div>
+                    <div class="label-small" style="margin-top:6px;">Total Dist</div>
+                </div>
+            </div>
+
+            <!-- Sort controls -->
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px;">
+                <button class="sort-pill active" data-sort="newest" onclick="setSortMode(this,'newest')">Newest</button>
+                <button class="sort-pill" data-sort="oldest" onclick="setSortMode(this,'oldest')">Oldest</button>
+                <button class="sort-pill" data-sort="fastest" onclick="setSortMode(this,'fastest')">Fastest</button>
+                <button class="sort-pill" data-sort="slowest" onclick="setSortMode(this,'slowest')">Slowest</button>
+            </div>
+
+            <!-- Ride list -->
+            <div id="rides-list" style="overflow-x:hidden; min-width:0;"></div>
+        </div>
+    </div>
  
 
-<div class="main-content">
-
-<!-- TAB: HOME -->
-<div id="tab-home" class="tab-content active">
-    <!-- HERO -->
-    <div class="hero-section" style="padding: 80px 24px 64px;">
-        <div style="max-width: 1200px; margin: 0 auto;">
-            <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: clamp(3rem, 8vw, 7rem); line-height: 0.95; color: #f0ede8; letter-spacing: -0.02em; text-transform: uppercase;">Col de<br>Vence</div>
-            <div style="margin-top: 20px; font-family: 'Montserrat', sans-serif; font-weight: 300; font-size: clamp(0.8rem, 2vw, 1rem); letter-spacing: 0.25em; text-transform: uppercase; color: #c8922a;">Alpes-Maritimes &middot; 962m &middot; Cat. 1</div>
-        </div>
-    </div>
-
-    <div style="max-width: 1200px; margin: 0 auto; padding: 40px 24px;">
-
-        <!-- PB STRIP -->
-        <div class="pb-strip" style="padding: 16px 20px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <div class="form-label" style="margin: 0;">Your Best Time</div>
-            <div id="pb-display" style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 1.1rem; color: #c8922a; letter-spacing: 0.05em;">—</div>
-        </div>
-
-        <!-- STATS GRID -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background-color: #2a2a2a; margin-bottom: 40px; border: 1px solid #2a2a2a;" id="stats-grid-border">
-            <div class="stat-card" style="padding: 24px 20px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.8rem; color: #c8922a; line-height: 1;">9.7</div>
-                <div class="form-label" style="margin: 6px 0 0; font-size: 0.62rem;">km / Distance</div>
-            </div>
-            <div class="stat-card" style="padding: 24px 20px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.8rem; color: #c8922a; line-height: 1;">764</div>
-                <div class="form-label" style="margin: 6px 0 0; font-size: 0.62rem;">m / Elevation Gain</div>
-            </div>
-            <div class="stat-card" style="padding: 24px 20px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.8rem; color: #c8922a; line-height: 1;">6.5%</div>
-                <div class="form-label" style="margin: 6px 0 0; font-size: 0.62rem;">Avg Gradient</div>
-            </div>
-            <div class="stat-card" style="padding: 24px 20px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.8rem; color: #c8922a; line-height: 1;">962</div>
-                <div class="form-label" style="margin: 6px 0 0; font-size: 0.62rem;">m / Summit</div>
-            </div>
-            <div class="stat-card" style="padding: 24px 20px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.8rem; color: #c8922a; line-height: 1;">321</div>
-                <div class="form-label" style="margin: 6px 0 0; font-size: 0.62rem;">m / Start Altitude</div>
-            </div>
-            <div class="stat-card" style="padding: 24px 20px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.8rem; color: #c8922a; line-height: 1;">~11%</div>
-                <div class="form-label" style="margin: 6px 0 0; font-size: 0.62rem;">Max Gradient</div>
-            </div>
-            <div class="stat-card" style="padding: 24px 20px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.8rem; color: #c8922a; line-height: 1;">23:58</div>
-                <div class="form-label" style="margin: 6px 0 0; font-size: 0.62rem;">KOM</div>
-            </div>
-            <div class="stat-card" style="padding: 24px 20px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.8rem; color: #c8922a; line-height: 1;">28:13</div>
-                <div class="form-label" style="margin: 6px 0 0; font-size: 0.62rem;">QOM</div>
-            </div>
-        </div>
-
-        <!-- PWA STATUS -->
-        <div style="margin-bottom: 40px;">
-            <div class="section-header" style="font-size: 0.85rem; margin-bottom: 16px;">App Status</div>
-            <div class="fact-card" style="padding: 20px 24px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between;">
-                <div style="font-family: 'Inter', sans-serif; font-weight: 300; font-size: 0.82rem; color: #888888; line-height: 1.6;">
-                    <span style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: #c8922a; display: block; margin-bottom: 4px;">Offline Ready</span>
-                    This app can be used without an internet connection once loaded.
-                </div>
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: #888888;" id="pwa-cache-status">Caching in progress...</div>
-            </div>
-        </div>
-
-        <!-- THE CLIMB -->
-        <div style="margin-bottom: 16px;">
-            <div class="section-header" style="font-size: 1.1rem; margin-bottom: 24px;">The Climb</div>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background-color: #2a2a2a; border: 1px solid #2a2a2a;" id="fact-grid-border">
-            <div class="fact-card" style="padding: 28px 24px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c8922a; margin-bottom: 12px;">01 — Ascent Profile</div>
-                <div style="font-family: 'Inter', sans-serif; font-weight: 300; font-size: 0.9rem; line-height: 1.7; color: #888888;" id="fact-text-1">Col de Vence rises from the medieval hilltop town of Vence at 321m to its summit at 962m — a true Category 1 ascent across 9.7 kilometres.</div>
-            </div>
-            <div class="fact-card" style="padding: 28px 24px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c8922a; margin-bottom: 12px;">02 — Paris-Nice</div>
-                <div style="font-family: 'Inter', sans-serif; font-weight: 300; font-size: 0.9rem; line-height: 1.7; color: #888888;" id="fact-text-2">Paris-Nice, the Race to the Sun, has featured the Col de Vence as both a summit finish and an intermediate climb on the road to the Cote d'Azur.</div>
-            </div>
-            <div class="fact-card" style="padding: 28px 24px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c8922a; margin-bottom: 12px;">03 — Pro Training</div>
-                <div style="font-family: 'Inter', sans-serif; font-weight: 300; font-size: 0.9rem; line-height: 1.7; color: #888888;" id="fact-text-3">Pro teams including INEOS Grenadiers and AG2R Citroen use the Col de Vence for training camps, drawn by its proximity to Nice and consistent road conditions.</div>
-            </div>
-            <div class="fact-card" style="padding: 28px 24px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c8922a; margin-bottom: 12px;">04 — Strava KOM</div>
-                <div style="font-family: 'Inter', sans-serif; font-weight: 300; font-size: 0.9rem; line-height: 1.7; color: #888888;" id="fact-text-4">The Strava KOM stands at 23 minutes and 58 seconds — an average speed of 24.3 km/h sustained across a 6.5% mean gradient.</div>
-            </div>
-            <div class="fact-card" style="padding: 28px 24px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c8922a; margin-bottom: 12px;">05 — Summit Views</div>
-                <div style="font-family: 'Inter', sans-serif; font-weight: 300; font-size: 0.9rem; line-height: 1.7; color: #888888;" id="fact-text-5">From the summit on a clear day, the panorama stretches across the Var valley to the full arc of the Mediterranean coastline.</div>
-            </div>
-            <div class="fact-card" style="padding: 28px 24px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c8922a; margin-bottom: 12px;">06 — Road Conditions</div>
-                <div style="font-family: 'Inter', sans-serif; font-weight: 300; font-size: 0.9rem; line-height: 1.7; color: #888888;" id="fact-text-6">The D2 road surface is well-maintained, wide, and generally low-traffic — making the Col de Vence accessible year-round except during rare winter closures.</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- TAB: LOG RIDE -->
-<div id="tab-log" class="tab-content">
-    <div style="max-width: 900px; margin: 0 auto; padding: 48px 24px;">
-        <div class="section-header" style="font-size: 1.5rem; margin-bottom: 36px;" id="log-form-title">Log a Ride</div>
-        <input type="hidden" id="edit-ride-id" value="">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;" id="form-grid">
-            <div>
-                <label class="form-label">Date</label>
-                <input type="date" id="ride-date" class="form-input">
-            </div>
-            <div>
-                <label class="form-label">Time</label>
-                <div style="display: flex; gap: 8px; align-items: flex-start;">
-                    <div style="flex: 1;">
-                        <input type="number" id="ride-hh" class="form-input" placeholder="00" min="0" max="23" style="text-align: center;">
-                        <div style="font-family: 'Inter', sans-serif; font-size: 0.65rem; color: #888888; text-align: center; margin-top: 4px; letter-spacing: 0.08em;">HH</div>
-                    </div>
-                    <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 1.2rem; color: #888888; padding: 8px 2px;">:</div>
-                    <div style="flex: 1;">
-                        <input type="number" id="ride-mm" class="form-input" placeholder="00" min="0" max="59" style="text-align: center;">
-                        <div style="font-family: 'Inter', sans-serif; font-size: 0.65rem; color: #888888; text-align: center; margin-top: 4px; letter-spacing: 0.08em;">MM</div>
-                    </div>
-                    <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 1.2rem; color: #888888; padding: 8px 2px;">:</div>
-                    <div style="flex: 1;">
-                        <input type="number" id="ride-ss" class="form-input" placeholder="00" min="0" max="59" style="text-align: center;">
-                        <div style="font-family: 'Inter', sans-serif; font-size: 0.65rem; color: #888888; text-align: center; margin-top: 4px; letter-spacing: 0.08em;">SS</div>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <label class="form-label">Distance (km)</label>
-                <input type="number" id="ride-distance" class="form-input" value="9.7" step="0.1">
-            </div>
-            <div>
-                <label class="form-label">Weather</label>
-                <select id="ride-weather" class="form-input">
-                    <option value="">— Select —</option>
-                    <option value="Sunny">Sunny</option>
-                    <option value="Partly Cloudy">Partly Cloudy</option>
-                    <option value="Overcast">Overcast</option>
-                    <option value="Rain">Rain</option>
-                    <option value="Wind">Wind</option>
-                    <option value="Cold">Cold</option>
-                </select>
-            </div>
-            <div>
-                <label class="form-label">Temp (C)</label>
-                <input type="number" id="ride-temp" class="form-input" placeholder="e.g. 18">
-            </div>
-            <div></div>
-            <div style="grid-column: 1 / -1;">
-                <label class="form-label">Conditions</label>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px;" id="conditions-pills">
-                    <button class="pill" onclick="toggleCondition(this)" data-value="FRESH">Fresh</button>
-                    <button class="pill" onclick="toggleCondition(this)" data-value="TIRED">Tired</button>
-                    <button class="pill" onclick="toggleCondition(this)" data-value="HANGOVER">Hangover</button>
-                    <button class="pill" onclick="toggleCondition(this)" data-value="INJURED">Injured</button>
-                    <button class="pill" onclick="toggleCondition(this)" data-value="RACE EFFORT">Race Effort</button>
-                    <button class="pill" onclick="toggleCondition(this)" data-value="RECOVERY">Recovery</button>
-                    <button class="pill" onclick="toggleCondition(this)" data-value="HEADWIND">Headwind</button>
-                    <button class="pill" onclick="toggleCondition(this)" data-value="TAILWIND">Tailwind</button>
-                    <button class="pill" onclick="toggleCondition(this)" data-value="TRAINING BLOCK">Training Block</button>
-                </div>
-            </div>
-            <div style="grid-column: 1 / -1;">
-                <label class="form-label">Notes</label>
-                <textarea id="ride-notes" class="form-input" rows="4" placeholder="How did the climb feel today?" style="resize: vertical;"></textarea>
-            </div>
-            <div style="grid-column: 1 / -1;">
-                <label class="form-label">Photos</label>
-                <input type="file" id="ride-photos" class="form-input" multiple accept="image/*" onchange="handlePhotoSelect(this)" style="cursor: pointer;">
-                <div id="photo-preview-grid" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;"></div>
-            </div>
-            <div style="grid-column: 1 / -1; margin-top: 8px;">
-                <button class="btn-primary" id="save-btn" onclick="saveRide()">Save Ride</button>
-                <button class="btn-primary" id="cancel-edit-btn" onclick="cancelEdit()" style="display:none; margin-top: 8px; background: transparent; color: #888888; border: 1px solid #2a2a2a;">Cancel Edit</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- TAB: MY RIDES -->
-<div id="tab-rides" class="tab-content">
-    <div style="max-width: 1000px; margin: 0 auto; padding: 48px 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 32px;">
-            <div class="section-header" style="font-size: 1.5rem;">My Rides</div>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="sort-pills">
-                <button class="sort-pill active" onclick="setSort('newest')" data-sort="newest">Newest</button>
-                <button class="sort-pill" onclick="setSort('oldest')" data-sort="oldest">Oldest</button>
-                <button class="sort-pill" onclick="setSort('fastest')" data-sort="fastest">Fastest</button>
-                <button class="sort-pill" onclick="setSort('slowest')" data-sort="slowest">Slowest</button>
-            </div>
-        </div>
-        <!-- Stats strip -->
-        <div class="stats-bar" style="display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 32px; padding: 0;">
-            <div style="padding: 20px 16px; border-right: 1px solid #2a2a2a;" id="stat-strip-border-1">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.5rem; color: #c8922a;" id="stat-total-rides">0</div>
-                <div class="form-label" style="margin: 4px 0 0; font-size: 0.6rem;">Total Rides</div>
-            </div>
-            <div style="padding: 20px 16px; border-right: 1px solid #2a2a2a;" id="stat-strip-border-2">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.5rem; color: #c8922a;" id="stat-best-time">—</div>
-                <div class="form-label" style="margin: 4px 0 0; font-size: 0.6rem;">Best Time</div>
-            </div>
-            <div style="padding: 20px 16px; border-right: 1px solid #2a2a2a;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.5rem; color: #c8922a;" id="stat-avg-time">—</div>
-                <div class="form-label" style="margin: 4px 0 0; font-size: 0.6rem;">Avg Time</div>
-            </div>
-            <div style="padding: 20px 16px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.5rem; color: #c8922a;" id="stat-total-dist">0</div>
-                <div class="form-label" style="margin: 4px 0 0; font-size: 0.6rem;">Total Distance (km)</div>
-            </div>
-        </div>
-        <div id="rides-list"></div>
-    </div>
-</div>
-
-<!-- TAB: ROUTE -->
-<div id="tab-route" class="tab-content">
-    <div style="max-width: 1100px; margin: 0 auto; padding: 48px 24px;">
-        <div class="section-header" style="font-size: 1.5rem; margin-bottom: 32px;">Route</div>
-
+    <!-- TAB: ROUTE -->
+    <div id="tab-content-route" class="tab-content">
         <!-- Map -->
-        <div style="position: relative;">
-            <div id="map-loading" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 999; background: rgba(15,15,15,0.7);">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: #888888;">Loading Route Data...</div>
+        <div style="position:relative;">
+            <div id="map-loading" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:var(--card); z-index:10; height:500px;">
+                <div style="text-align:center;">
+                    <div class="label-small" style="margin-bottom:8px;">Loading Route Data</div>
+                    <div style="width:32px; height:32px; border:2px solid #2a2a2a; border-top-color:#c8922a; border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto;"></div>
+                </div>
             </div>
             <div id="map"></div>
         </div>
+        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
-        <!-- Legend -->
-        <div style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
-            <div class="gradient-legend" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: #888888; margin-right: 4px;">Gradient</div>
-                <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 14px; height: 4px; background: #4caf50;"></div><span style="font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #888888;">&lt;5%</span></div>
-                <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 14px; height: 4px; background: #ff9800;"></div><span style="font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #888888;">5–7%</span></div>
-                <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 14px; height: 4px; background: #f44336;"></div><span style="font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #888888;">7–9%</span></div>
-                <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 14px; height: 4px; background: #9c27b0;"></div><span style="font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #888888;">9%+</span></div>
+        <div class="section-pad" style="max-width:1100px; margin:0 auto;">
+            <!-- Elevation Profile -->
+            <div class="section-title" style="margin-bottom:16px;">Elevation Profile</div>
+            <div class="elevation-chart-wrap" style="margin-bottom:32px;">
+                <canvas id="elevation-chart" style="height:220px; max-height:220px;"></canvas>
             </div>
-            <div id="route-status" style="font-family: 'Montserrat', sans-serif; font-size: 0.65rem; letter-spacing: 0.08em; color: #888888; text-transform: uppercase;"></div>
-        </div>
 
-        <!-- Elevation Profile -->
-        <div style="margin-top: 36px;">
-            <div class="form-label" style="margin-bottom: 16px; font-size: 0.7rem;">Elevation Profile</div>
-            <div style="position: relative; height: 220px;" class="surface" style="border: 1px solid #2a2a2a; padding: 12px;">
-                <canvas id="elevation-chart"></canvas>
+            <!-- Route Stats Strip -->
+            <div class="section-title" style="margin-bottom:16px;">Route Statistics</div>
+            <div style="background:var(--card); border:1px solid var(--border);">
+                <div class="route-stat-strip">
+                    <div class="route-stat-item">
+                        <div class="stat-number" style="font-size:20px;">9.7 km</div>
+                        <div class="label-small" style="margin-top:4px;">Distance</div>
+                    </div>
+                    <div class="route-stat-item">
+                        <div class="stat-number" style="font-size:20px;">764 m</div>
+                        <div class="label-small" style="margin-top:4px;">Gain</div>
+                    </div>
+                    <div class="route-stat-item">
+                        <div class="stat-number" style="font-size:20px;">6.5%</div>
+                        <div class="label-small" style="margin-top:4px;">Avg Grad</div>
+                    </div>
+                    <div class="route-stat-item">
+                        <div class="stat-number" style="font-size:20px;">~11%</div>
+                        <div class="label-small" style="margin-top:4px;">Max Grad</div>
+                    </div>
+                    <div class="route-stat-item">
+                        <div class="stat-number" style="font-size:20px;">962 m</div>
+                        <div class="label-small" style="margin-top:4px;">Summit</div>
+                    </div>
+                    <div class="route-stat-item">
+                        <div class="stat-number" style="font-size:20px;">321 m</div>
+                        <div class="label-small" style="margin-top:4px;">Start</div>
+                    </div>
+                </div>
+                <div style="padding:12px 24px; border-top:1px solid var(--border);">
+                    <p style="font-size:11px; color:var(--muted); font-family:'Inter',sans-serif; margin:0;">Route data verified — VeloViewer (seg. 8044873) &middot; MyCols.app &middot; TheRideAtlas</p>
+                </div>
             </div>
-        </div>
-
-        <!-- Route Stats -->
-        <div class="stats-bar" style="margin-top: 24px; display: flex; flex-wrap: wrap;">
-            <div style="padding: 16px 20px; border-right: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; flex: 1; min-width: 100px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.1rem; color: #c8922a;">9.7 KM</div>
-                <div class="form-label" style="margin: 4px 0 0; font-size: 0.58rem;">Distance</div>
-            </div>
-            <div style="padding: 16px 20px; border-right: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; flex: 1; min-width: 100px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.1rem; color: #c8922a;">764 M</div>
-                <div class="form-label" style="margin: 4px 0 0; font-size: 0.58rem;">Elevation Gain</div>
-            </div>
-            <div style="padding: 16px 20px; border-right: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; flex: 1; min-width: 100px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.1rem; color: #c8922a;">6.5%</div>
-                <div class="form-label" style="margin: 4px 0 0; font-size: 0.58rem;">Avg Gradient</div>
-            </div>
-            <div style="padding: 16px 20px; border-right: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; flex: 1; min-width: 100px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.1rem; color: #c8922a;">~11%</div>
-                <div class="form-label" style="margin: 4px 0 0; font-size: 0.58rem;">Max Gradient</div>
-            </div>
-            <div style="padding: 16px 20px; border-right: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; flex: 1; min-width: 100px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.1rem; color: #c8922a;">962 M</div>
-                <div class="form-label" style="margin: 4px 0 0; font-size: 0.58rem;">Summit</div>
-            </div>
-            <div style="padding: 16px 20px; border-bottom: 1px solid #2a2a2a; flex: 1; min-width: 100px;">
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.1rem; color: #c8922a;">321 M</div>
-                <div class="form-label" style="margin: 4px 0 0; font-size: 0.58rem;">Start Altitude</div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div style="margin-top: 24px; font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #888888; line-height: 1.6;">
-            Route data verified — VeloViewer (seg. 8044873) &middot; MyCols.app &middot; TheRideAtlas
         </div>
     </div>
 </div>
 
-</div>
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
 
 <!-- LIGHTBOX -->
-<div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
-    <img id="lightbox-img" src="" alt="Ride photo">
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <img id="lightbox-img" src="" alt="Photo">
 </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
+<!-- ANDROID INSTALL BANNER -->
+<div id="install-banner" class="install-banner">
+    <div style="flex:1;">
+        <div style="font-family:'Montserrat',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#f0ede8; margin-bottom:4px;">Install Col de Vence</div>
+        <div style="font-size:12px; color:#888; font-family:'Inter',sans-serif;">Install for offline use and quick access</div>
+    </div>
+    <div style="display:flex; gap:8px; flex-shrink:0;">
+        <button onclick="dismissInstall()" style="background:none; border:1px solid #444; color:#888; font-family:'Montserrat',sans-serif; font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:8px 14px; cursor:pointer; border-radius:0;">Dismiss</button>
+        <button onclick="doInstall()" style="background:#c8922a; border:none; color:#000; font-family:'Montserrat',sans-serif; font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:8px 14px; cursor:pointer; border-radius:0;">Install</button>
+    </div>
+</div>
+
+<!-- IOS INSTALL BANNER -->
+<div id="ios-banner" class="ios-banner">
+    <div style="flex:1;">
+        <div style="font-family:'Montserrat',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#f0ede8; margin-bottom:4px;">Add to Home Screen</div>
+        <div style="font-size:12px; color:#888; font-family:'Inter',sans-serif;">Tap the Share button, then select Add to Home Screen</div>
+    </div>
+    <button onclick="dismissIOS()" style="background:none; border:1px solid #444; color:#888; font-family:'Montserrat',sans-serif; font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:8px 14px; cursor:pointer; border-radius:0; flex-shrink:0;">Got it</button>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
 // ============================================================
-// STATE
+// GLOBAL showTab FUNCTION - MUST BE GLOBAL, OUTSIDE EVERYTHING
 // ============================================================
-let rides = [];
-let currentSort = 'newest';
-let editPhotoData = [];
-let newPhotoData = [];
-let mapInstance = null;
-let mapInitialized = false;
-let elevationChart = null;
-let currentTab = 'home';
-let isLightMode = false;
-
-// ============================================================
-// INIT
-// ============================================================
-document.addEventListener('DOMContentLoaded', () => {
-    rides = loadRides();
-    initTheme();
-    setDefaultDate();
-    updatePBStrip();
-    applyResponsiveGrid();
-    window.addEventListener('resize', applyResponsiveGrid);
-});
-
-function applyResponsiveGrid() {
-    const w = window.innerWidth;
-    const sg = document.getElementById('stats-grid-border');
-    const fg = document.getElementById('fact-grid-border');
-    if (sg) sg.style.gridTemplateColumns = w < 640 ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)';
-    if (fg) fg.style.gridTemplateColumns = w < 640 ? '1fr' : 'repeat(2, 1fr)';
-    const formGrid = document.getElementById('form-grid');
-    if (formGrid) formGrid.style.gridTemplateColumns = w < 640 ? '1fr' : '1fr 1fr';
-}
-
-// ============================================================
-// THEME
-// ============================================================
-function initTheme() {
-    const saved = localStorage.getItem('colDeVenceTheme');
-    if (saved === 'light') {
-        isLightMode = true;
-        document.body.classList.add('light-mode');
-        document.getElementById('themeToggle').textContent = 'DARK';
-        document.getElementById('themeToggleFab').textContent = '●';
-        document.getElementById('themeToggleFab').title = 'Switch to dark mode';
-    } else {
-        isLightMode = false;
-        document.body.classList.remove('light-mode');
-        document.getElementById('themeToggle').textContent = 'LIGHT';
-        document.getElementById('themeToggleFab').textContent = '○';
-        document.getElementById('themeToggleFab').title = 'Switch to light mode';
+function showTab(tabName) {
+    var tabs = document.querySelectorAll('.tab-content');
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove('active');
     }
-    updateChartTheme();
-}
-
-function toggleTheme() {
-    isLightMode = !isLightMode;
-    if (isLightMode) {
-        document.body.classList.add('light-mode');
-        document.getElementById('themeToggle').textContent = 'DARK';
-        document.getElementById('themeToggleFab').textContent = '●';
-        document.getElementById('themeToggleFab').title = 'Switch to dark mode';
-        localStorage.setItem('colDeVenceTheme', 'light');
-    } else {
-        document.body.classList.remove('light-mode');
-        document.getElementById('themeToggle').textContent = 'LIGHT';
-        document.getElementById('themeToggleFab').textContent = '○';
-        document.getElementById('themeToggleFab').title = 'Switch to light mode';
-        localStorage.setItem('colDeVenceTheme', 'dark');
+    var navBtns = document.querySelectorAll('.nav-tab');
+    for (var j = 0; j < navBtns.length; j++) {
+        navBtns[j].classList.remove('active');
     }
-    updateChartTheme();
-}
- 
+    var target = document.getElementById('tab-content-' + tabName);
+    if (target) target.classList.add('active');
+    var navBtn = document.getElementById('tab-' + tabName);
+    if (navBtn) navBtn.classList.add('active');
 
-function updateChartTheme() {
-    if (!elevationChart) return;
-    const isDark = !isLightMode;
-    const gridColor = isDark ? 'rgba(42,42,42,0.8)' : 'rgba(200,195,190,0.6)';
-    const tickColor = isDark ? '#888888' : '#666666';
-    const accentColor = isDark ? '#c8922a' : '#b07d20';
-    const fillColor = isDark ? 'rgba(200,146,42,0.3)' : 'rgba(176,125,32,0.3)';
-
-    elevationChart.data.datasets[0].borderColor = accentColor;
-    elevationChart.data.datasets[0].backgroundColor = fillColor;
-    elevationChart.data.datasets[0].pointBackgroundColor = accentColor;
-    elevationChart.options.scales.x.grid.color = gridColor;
-    elevationChart.options.scales.y.grid.color = gridColor;
-    elevationChart.options.scales.x.ticks.color = tickColor;
-    elevationChart.options.scales.y.ticks.color = tickColor;
-    elevationChart.update();
-}
-
-// ============================================================
-// TABS
-// ============================================================
-function switchTab(tab) {
-    document.querySelectorAll('.tab-content').forEach(el => {
-        el.classList.remove('active');
-        el.style.display = 'none';
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(8px)';
-    });
-    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-
-    const targetEl = document.getElementById('tab-' + tab);
-    targetEl.style.display = 'block';
-    setTimeout(() => {
-        targetEl.classList.add('active');
-        targetEl.style.opacity = '1';
-        targetEl.style.transform = 'translateY(0)';
-    }, 10);
-
-    // Activate the matching nav button by data-tab attribute
-    const activeBtn = document.querySelector(`.nav-link[data-tab="${tab}"]`);
-    if (activeBtn) {
-        activeBtn.classList.add('active');
-        // Scroll the active tab into view within the scrollable nav
-        activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }
-
-    currentTab = tab;
-
-    if (tab === 'rides') {
+    if (tabName === 'rides') {
         renderRides();
     }
-    if (tab === 'route') {
-        setTimeout(() => {
-            initMap();
-        }, 100);
+    if (tabName === 'route') {
+        initMapOnce();
+        initChartOnce();
     }
-    if (tab === 'log') {
-        applyResponsiveGrid();
+    if (tabName === 'home') {
+        updateHomePB();
     }
 }
- 
 
 // ============================================================
-// LOCALSTORAGE
+// GLOBAL HELPERS
 // ============================================================
-function loadRides() {
-    try {
-        return JSON.parse(localStorage.getItem('colDeVenceRides')) || [];
-    } catch { return []; }
-}
-function saveRides() {
-    localStorage.setItem('colDeVenceRides', JSON.stringify(rides));
-}
-
-// ============================================================
-// FORM
-// ============================================================
-function setDefaultDate() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('ride-date').value = today;
-}
-
 function toggleCondition(btn) {
     btn.classList.toggle('selected');
 }
 
-function getSelectedConditions() {
-    return Array.from(document.querySelectorAll('#conditions-pills .pill.selected')).map(b => b.dataset.value);
+function setSortMode(btn, mode) {
+    currentSort = mode;
+    var pills = document.querySelectorAll('.sort-pill');
+    for (var i = 0; i < pills.length; i++) {
+        pills[i].classList.remove('active');
+    }
+    btn.classList.add('active');
+    renderRides();
 }
 
-let photoBase64s = [];
+function toggleTheme() {
+    var body = document.body;
+    if (body.classList.contains('light-mode')) {
+        body.classList.remove('light-mode');
+        localStorage.setItem('colDeVenceTheme', 'dark');
+        document.getElementById('theme-btn-desktop').textContent = 'Light';
+    } else {
+        body.classList.add('light-mode');
+        localStorage.setItem('colDeVenceTheme', 'light');
+        document.getElementById('theme-btn-desktop').textContent = 'Dark';
+    }
+}
 
-function handlePhotoSelect(input) {
-    const files = Array.from(input.files);
-    photoBase64s = [];
-    const grid = document.getElementById('photo-preview-grid');
-    grid.innerHTML = '';
-    files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            photoBase64s.push(e.target.result);
-            const img = document.createElement('img');
+function openLightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').classList.add('open');
+}
+
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+}
+
+function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 3000);
+}
+
+function previewPhotos(input) {
+    var preview = document.getElementById('photo-preview');
+    preview.innerHTML = '';
+    var files = Array.from(input.files);
+    files.forEach(function(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = document.createElement('img');
             img.src = e.target.result;
-            img.className = 'photo-thumb';
-            img.onclick = () => openLightbox(e.target.result);
-            grid.appendChild(img);
+            img.onclick = function() { openLightbox(e.target.result); };
+            preview.appendChild(img);
         };
         reader.readAsDataURL(file);
     });
 }
 
-function saveRide() {
-    const date = document.getElementById('ride-date').value;
-    const hh = parseInt(document.getElementById('ride-hh').value) || 0;
-    const mm = parseInt(document.getElementById('ride-mm').value) || 0;
-    const ss = parseInt(document.getElementById('ride-ss').value) || 0;
-    const distance = parseFloat(document.getElementById('ride-distance').value) || 9.7;
-    const weather = document.getElementById('ride-weather').value;
-    const temp = document.getElementById('ride-temp').value;
-    const notes = document.getElementById('ride-notes').value;
-    const conditions = getSelectedConditions();
-    const editId = document.getElementById('edit-ride-id').value;
+// ============================================================
+// DATA
+// ============================================================
+var currentSort = 'newest';
+var deferredInstall = null;
+var mapInitialized = false;
+var chartInitialized = false;
 
-    if (!date) { showToast('Please enter a date'); return; }
-    if (hh === 0 && mm === 0 && ss === 0) { showToast('Please enter a ride time'); return; }
+function getRides() {
+    try {
+        return JSON.parse(localStorage.getItem('colDeVenceRides') || '[]');
+    } catch(e) { return []; }
+}
 
-    const totalSeconds = hh * 3600 + mm * 60 + ss;
-    const timeStr = formatTime(hh, mm, ss);
+function saveRides(rides) {
+    localStorage.setItem('colDeVenceRides', JSON.stringify(rides));
+}
 
-    const photos = editId ? (editPhotoData.length > 0 ? editPhotoData : (rides.find(r=>r.id===editId)||{}).photos || []) : photoBase64s;
+function rideToSeconds(ride) {
+    return (parseInt(ride.hours)||0)*3600 + (parseInt(ride.minutes)||0)*60 + (parseInt(ride.seconds)||0);
+}
 
-    if (editId) {
-        const idx = rides.findIndex(r => r.id === editId);
-        if (idx !== -1) {
-            rides[idx] = { ...rides[idx], date, hh, mm, ss, totalSeconds, timeStr, distance, weather, temp, notes, conditions, photos: photoBase64s.length > 0 ? photoBase64s : rides[idx].photos };
-        }
-        cancelEdit();
-        showToast('Ride updated');
+function formatTime(h, m, s) {
+    h = parseInt(h)||0; m = parseInt(m)||0; s = parseInt(s)||0;
+    if (h > 0) return h + ':' + pad2(m) + ':' + pad2(s);
+    return m + ':' + pad2(s);
+}
+
+function pad2(n) { return String(n).padStart(2,'0'); }
+
+function getBestRide() {
+    var rides = getRides().filter(function(r) { return rideToSeconds(r) > 0; });
+    if (!rides.length) return null;
+    return rides.reduce(function(best, r) {
+        return rideToSeconds(r) < rideToSeconds(best) ? r : best;
+    });
+}
+
+// ============================================================
+// HOME PB
+// ============================================================
+function updateHomePB() {
+    var best = getBestRide();
+    var el = document.getElementById('home-pb');
+    if (best) {
+        el.textContent = formatTime(best.hours, best.minutes, best.seconds);
+        el.style.color = '#c8922a';
     } else {
-        const ride = {
-            id: Date.now().toString(),
-            date, hh, mm, ss, totalSeconds, timeStr, distance, weather, temp, notes, conditions,
-            photos: photoBase64s
-        };
-        rides.unshift(ride);
-        showToast('Ride saved');
+        el.textContent = 'No rides recorded yet';
+        el.style.color = '#888';
+        el.style.fontSize = '14px';
+    }
+}
+
+// ============================================================
+// LOG RIDE
+// ============================================================
+function saveRide(e) {
+    e.preventDefault();
+    var editId = document.getElementById('edit-id').value;
+
+    var selectedConditions = [];
+    var pills = document.querySelectorAll('#conditions-wrap .pill-toggle.selected');
+    for (var i = 0; i < pills.length; i++) {
+        selectedConditions.push(pills[i].getAttribute('data-val'));
     }
 
-    saveRides();
-    updatePBStrip();
-    resetForm();
+    var newPhotos = [];
+    var photoFiles = document.getElementById('f-photos').files;
+    var photoPromises = [];
+
+    function doSave(photos) {
+        var ride = {
+            id: editId || Date.now().toString(),
+            date: document.getElementById('f-date').value,
+            hours: document.getElementById('f-hours').value || '0',
+            minutes: document.getElementById('f-minutes').value || '0',
+            seconds: document.getElementById('f-seconds').value || '0',
+            distance: document.getElementById('f-distance').value || '9.7',
+            weather: document.getElementById('f-weather').value,
+            temp: document.getElementById('f-temp').value,
+            conditions: selectedConditions,
+            notes: document.getElementById('f-notes').value,
+            photos: photos
+        };
+
+        var rides = getRides();
+        if (editId) {
+            var idx = rides.findIndex(function(r) { return r.id === editId; });
+            if (idx !== -1) rides[idx] = ride;
+            else rides.unshift(ride);
+            showToast('Ride updated.');
+        } else {
+            rides.unshift(ride);
+            showToast('Ride saved.');
+        }
+        saveRides(rides);
+        resetForm();
+        updateHomePB();
+    }
+
+    if (photoFiles.length > 0) {
+        var photoBase64 = [];
+        var loaded = 0;
+        Array.from(photoFiles).forEach(function(file, idx) {
+            var reader = new FileReader();
+            reader.onload = function(ev) {
+                photoBase64[idx] = ev.target.result;
+                loaded++;
+                if (loaded === photoFiles.length) {
+                    // Merge with existing photos if editing
+                    var existingImgs = document.querySelectorAll('#existing-photos img');
+                    var existingB64 = Array.from(existingImgs).map(function(img) { return img.getAttribute('data-src'); });
+                    doSave(existingB64.concat(photoBase64));
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    } else {
+        var existingImgs = document.querySelectorAll('#existing-photos img');
+        var existingB64 = Array.from(existingImgs).map(function(img) { return img.getAttribute('data-src'); });
+        doSave(existingB64);
+    }
 }
 
 function resetForm() {
-    document.getElementById('ride-hh').value = '';
-    document.getElementById('ride-mm').value = '';
-    document.getElementById('ride-ss').value = '';
-    document.getElementById('ride-distance').value = '9.7';
-    document.getElementById('ride-weather').value = '';
-    document.getElementById('ride-temp').value = '';
-    document.getElementById('ride-notes').value = '';
-    document.getElementById('ride-photos').value = '';
-    document.getElementById('photo-preview-grid').innerHTML = '';
-    document.querySelectorAll('#conditions-pills .pill').forEach(p => p.classList.remove('selected'));
-    photoBase64s = [];
+    document.getElementById('edit-id').value = '';
+    document.getElementById('log-title').textContent = 'Log a Ride';
+    document.getElementById('save-btn').textContent = 'Save Ride';
+    document.getElementById('ride-form').reset();
+    document.getElementById('f-distance').value = '9.7';
     setDefaultDate();
+    var pills = document.querySelectorAll('#conditions-wrap .pill-toggle');
+    pills.forEach(function(p) { p.classList.remove('selected'); });
+    document.getElementById('photo-preview').innerHTML = '';
+    document.getElementById('existing-photos').innerHTML = '';
 }
 
-function cancelEdit() {
-    document.getElementById('edit-ride-id').value = '';
-    document.getElementById('log-form-title').textContent = 'Log a Ride';
-    document.getElementById('save-btn').textContent = 'Save Ride';
-    document.getElementById('cancel-edit-btn').style.display = 'none';
-    resetForm();
-    editPhotoData = [];
+function setDefaultDate() {
+    var d = new Date();
+    var str = d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+    document.getElementById('f-date').value = str;
 }
 
 function editRide(id) {
-    const ride = rides.find(r => r.id === id);
+    var rides = getRides();
+    var ride = rides.find(function(r) { return r.id === id; });
     if (!ride) return;
 
-    document.getElementById('edit-ride-id').value = id;
-    document.getElementById('ride-date').value = ride.date;
-    document.getElementById('ride-hh').value = ride.hh || 0;
-    document.getElementById('ride-mm').value = ride.mm || 0;
-    document.getElementById('ride-ss').value = ride.ss || 0;
-    document.getElementById('ride-distance').value = ride.distance;
-    document.getElementById('ride-weather').value = ride.weather || '';
-    document.getElementById('ride-temp').value = ride.temp || '';
-    document.getElementById('ride-notes').value = ride.notes || '';
-
-    document.querySelectorAll('#conditions-pills .pill').forEach(p => {
-        p.classList.toggle('selected', (ride.conditions || []).includes(p.dataset.value));
-    });
-
-    const grid = document.getElementById('photo-preview-grid');
-    grid.innerHTML = '';
-    editPhotoData = ride.photos || [];
-    editPhotoData.forEach(src => {
-        const img = document.createElement('img');
-        img.src = src;
-        img.className = 'photo-thumb';
-        img.onclick = () => openLightbox(src);
-        grid.appendChild(img);
-    });
-
-    document.getElementById('log-form-title').textContent = 'Edit Ride';
+    showTab('log');
+    document.getElementById('edit-id').value = id;
+    document.getElementById('log-title').textContent = 'Edit Ride';
     document.getElementById('save-btn').textContent = 'Update Ride';
-    document.getElementById('cancel-edit-btn').style.display = 'block';
 
-    switchTab('log');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById('f-date').value = ride.date || '';
+    document.getElementById('f-hours').value = ride.hours || '';
+    document.getElementById('f-minutes').value = ride.minutes || '';
+    document.getElementById('f-seconds').value = ride.seconds || '';
+    document.getElementById('f-distance').value = ride.distance || '9.7';
+    document.getElementById('f-weather').value = ride.weather || 'Sunny';
+    document.getElementById('f-temp').value = ride.temp || '';
+    document.getElementById('f-notes').value = ride.notes || '';
+
+    // Conditions
+    var pills = document.querySelectorAll('#conditions-wrap .pill-toggle');
+    pills.forEach(function(p) {
+        p.classList.remove('selected');
+        if (ride.conditions && ride.conditions.indexOf(p.getAttribute('data-val')) !== -1) {
+            p.classList.add('selected');
+        }
+    });
+
+    // Existing photos
+    var ep = document.getElementById('existing-photos');
+    ep.innerHTML = '';
+    if (ride.photos && ride.photos.length) {
+        ride.photos.forEach(function(src) {
+            var img = document.createElement('img');
+            img.src = src;
+            img.setAttribute('data-src', src);
+            img.style.cssText = 'width:80px;height:80px;object-fit:cover;cursor:pointer;border:1px solid var(--border);';
+            img.onclick = function() { openLightbox(src); };
+            ep.appendChild(img);
+        });
+    }
+    document.getElementById('photo-preview').innerHTML = '';
 }
 
 function deleteRide(id) {
     if (!confirm('Delete this ride?')) return;
-    rides = rides.filter(r => r.id !== id);
-    saveRides();
-    updatePBStrip();
+    var rides = getRides().filter(function(r) { return r.id !== id; });
+    saveRides(rides);
     renderRides();
-    showToast('Ride deleted');
+    updateHomePB();
+    showToast('Ride deleted.');
 }
 
 // ============================================================
-// PERSONAL BEST
+// MY RIDES
 // ============================================================
-function getBestRide() {
-    if (!rides.length) return null;
-    return rides.reduce((best, r) => (!best || r.totalSeconds < best.totalSeconds) ? r : best, null);
-}
-
-function updatePBStrip() {
-    const best = getBestRide();
-    const el = document.getElementById('pb-display');
-    if (best) {
-        const d = new Date(best.date + 'T12:00:00');
-        const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-        el.textContent = best.timeStr + ' — ' + dateStr;
-    } else {
-        el.textContent = '—';
-    }
-}
-
-// ============================================================
-// RIDES LIST
-// ============================================================
-function setSort(s) {
-    currentSort = s;
-    document.querySelectorAll('.sort-pill').forEach(p => {
-        p.classList.toggle('active', p.dataset.sort === s);
-    });
-    renderRides();
-}
-
-function getSortedRides() {
-    const sorted = [...rides];
-    if (currentSort === 'newest') sorted.sort((a,b) => new Date(b.date) - new Date(a.date));
-    else if (currentSort === 'oldest') sorted.sort((a,b) => new Date(a.date) - new Date(b.date));
-    else if (currentSort === 'fastest') sorted.sort((a,b) => a.totalSeconds - b.totalSeconds);
-    else if (currentSort === 'slowest') sorted.sort((a,b) => b.totalSeconds - a.totalSeconds);
-    return sorted;
-}
-
 function renderRides() {
-    const best = getBestRide();
-    const list = document.getElementById('rides-list');
+    var rides = getRides();
+    var container = document.getElementById('rides-list');
 
-    // Update stats
-    document.getElementById('stat-total-rides').textContent = rides.length;
-    document.getElementById('stat-best-time').textContent = best ? best.timeStr : '—';
-    document.getElementById('stat-total-dist').textContent = rides.reduce((s,r) => s + (parseFloat(r.distance)||0), 0).toFixed(1);
-    if (rides.length) {
-        const avg = Math.round(rides.reduce((s,r) => s + r.totalSeconds, 0) / rides.length);
-        document.getElementById('stat-avg-time').textContent = formatSecondsToTime(avg);
+    // Update summary stats
+    document.getElementById('sum-total').textContent = rides.length;
+    if (rides.length > 0) {
+        var withTime = rides.filter(function(r) { return rideToSeconds(r) > 0; });
+        if (withTime.length > 0) {
+            var best = withTime.reduce(function(a,b) { return rideToSeconds(a)<rideToSeconds(b)?a:b; });
+            document.getElementById('sum-best').textContent = formatTime(best.hours, best.minutes, best.seconds);
+            var totalSec = withTime.reduce(function(s,r) { return s + rideToSeconds(r); }, 0);
+            var avgSec = Math.round(totalSec / withTime.length);
+            var ah = Math.floor(avgSec/3600), am = Math.floor((avgSec%3600)/60), as2 = avgSec%60;
+            document.getElementById('sum-avg').textContent = formatTime(ah,am,as2);
+        }
+        var totalDist = rides.reduce(function(s,r) { return s + parseFloat(r.distance||0); }, 0);
+        document.getElementById('sum-dist').textContent = totalDist.toFixed(1) + ' km';
     } else {
-        document.getElementById('stat-avg-time').textContent = '—';
+        document.getElementById('sum-best').textContent = '—';
+        document.getElementById('sum-avg').textContent = '—';
+        document.getElementById('sum-dist').textContent = '0';
     }
 
     if (!rides.length) {
-        list.innerHTML = '<div style="text-align: center; padding: 80px 20px; font-family: \'Inter\', sans-serif; font-weight: 300; color: #888888; font-size: 0.9rem; letter-spacing: 0.04em;">No rides recorded. Begin logging your ascents.</div>';
+        container.innerHTML = '<div style="text-align:center; padding:60px 20px; color:var(--muted); font-family:\'Inter\',sans-serif; font-size:14px;">No rides recorded. Begin logging your ascents.</div>';
         return;
     }
 
-    const sorted = getSortedRides();
-    list.innerHTML = sorted.map(ride => {
-        const isPB = best && ride.id === best.id;
-        const d = new Date(ride.date + 'T12:00:00');
-        const dayStr = d.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase();
-        const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase();
-        const conditions = (ride.conditions || []).map(c => `<span class="condition-tag">${c}</span>`).join('');
-        const photos = (ride.photos || []).slice(0, 5).map(src =>
-            `<img src="${src}" class="photo-thumb" style="width:54px;height:54px;" onclick="openLightbox('${src}')" alt="Photo">`
-        ).join('');
-        const weatherInfo = [ride.weather, ride.temp ? ride.temp + 'C' : ''].filter(Boolean).join(' · ');
+    // Sort
+    var sorted = rides.slice();
+    if (currentSort === 'newest') {
+        sorted.sort(function(a,b) { return (b.date||'').localeCompare(a.date||''); });
+    } else if (currentSort === 'oldest') {
+        sorted.sort(function(a,b) { return (a.date||'').localeCompare(b.date||''); });
+    } else if (currentSort === 'fastest') {
+        sorted.sort(function(a,b) { return rideToSeconds(a)-rideToSeconds(b); });
+    } else if (currentSort === 'slowest') {
+        sorted.sort(function(a,b) { return rideToSeconds(b)-rideToSeconds(a); });
+    }
 
-        return `<div class="ride-card" style="padding: 20px 0; display: flex; flex-direction: column; gap: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;">
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <div style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.7rem; letter-spacing: 0.12em; color: #888888;">${dayStr}</div>
-                    <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.1rem; letter-spacing: 0.04em; color: ${isLightMode ? '#1a1a1a' : '#f0ede8'};">${dateStr}</div>
+    var bestId = null;
+    var withTime2 = rides.filter(function(r) { return rideToSeconds(r) > 0; });
+    if (withTime2.length) {
+        var bestR = withTime2.reduce(function(a,b) { return rideToSeconds(a)<rideToSeconds(b)?a:b; });
+        bestId = bestR.id;
+    }
+
+    container.innerHTML = '';
+    sorted.forEach(function(ride, idx) {
+        var d = ride.date ? new Date(ride.date + 'T12:00:00') : null;
+        var dayStr = d ? d.getDate() : '?';
+        var monthStr = d ? d.toLocaleString('en-GB',{month:'short'}).toUpperCase() : '';
+        var timeStr = rideToSeconds(ride) > 0 ? formatTime(ride.hours, ride.minutes, ride.seconds) : '—';
+        var isBest = ride.id === bestId && rideToSeconds(ride) > 0;
+
+        var condHTML = '';
+        if (ride.conditions && ride.conditions.length) {
+            condHTML = ride.conditions.map(function(c) {
+                return '<span style="font-family:\'Montserrat\',sans-serif; font-size:9px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; background:var(--border); color:var(--muted); padding:3px 7px; display:inline-block;">' + escapeHTML(c) + '</span>';
+            }).join(' ');
+        }
+
+        var photosHTML = '';
+        if (ride.photos && ride.photos.length) {
+            var shown = ride.photos.slice(0,3);
+            shown.forEach(function(src) {
+                photosHTML += '<img class="thumb-small" src="' + src + '" onclick="openLightbox(this.src)" alt="Ride photo">';
+            });
+            if (ride.photos.length > 3) {
+                photosHTML += '<div style="width:60px;height:60px;background:var(--border);display:flex;align-items:center;justify-content:center;font-family:\'Montserrat\',sans-serif;font-size:11px;font-weight:600;color:var(--muted);">+' + (ride.photos.length-3) + '</div>';
+            }
+        }
+
+        var card = document.createElement('div');
+        card.innerHTML = `
+        <div class="ride-card" style="margin-bottom:12px; overflow-x:hidden; min-width:0; word-break:break-word; box-sizing:border-box;">
+            <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; min-width:0; overflow:hidden;">
+                <div style="flex-shrink:0; text-align:center; min-width:44px;">
+                    <div style="font-family:'Montserrat',sans-serif; font-weight:800; font-size:26px; line-height:1; color:var(--text);">${dayStr}</div>
+                    <div class="label-small" style="margin-top:2px;">${monthStr}</div>
+                    ${d ? '<div class="label-small" style="margin-top:1px;">' + d.getFullYear() + '</div>' : ''}
                 </div>
-                <div style="display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap;">
-                    ${isPB ? '<span class="pb-badge">BEST</span>' : ''}
-                    <div style="font-family: \'Montserrat\', sans-serif; font-weight: 800; font-size: 1.4rem; color: #c8922a; letter-spacing: 0.02em;">${ride.timeStr}</div>
+                <div style="flex:1; min-width:0; overflow:hidden;">
+                    <div style="font-family:'Montserrat',sans-serif; font-weight:800; font-size:26px; color:#c8922a; line-height:1; word-break:break-word; min-width:0; overflow-wrap:break-word;">${timeStr}</div>
+                    <div class="label-small" style="margin-top:4px;">${parseFloat(ride.distance||9.7).toFixed(1)} km</div>
+                </div>
+                <div style="flex-shrink:0; text-align:right; min-width:0; max-width:160px; overflow:hidden;">
+                    <div style="font-family:'Montserrat',sans-serif; font-size:11px; font-weight:600; color:var(--muted); margin-bottom:4px; word-break:break-word;">${escapeHTML(ride.weather||'')}${ride.temp ? ' · ' + ride.temp + '°C' : ''}</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:4px; justify-content:flex-end;">${condHTML}</div>
                 </div>
             </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
-                ${ride.distance ? `<span style="font-family:'Inter',sans-serif; font-size:0.78rem; color:#888888;">${ride.distance} km</span>` : ''}
-                ${weatherInfo ? `<span style="font-family:'Inter',sans-serif; font-size:0.78rem; color:#888888;">${weatherInfo}</span>` : ''}
-                ${conditions}
-            </div>
-            ${ride.notes ? `<div style="font-family:'Inter',sans-serif; font-size:0.8rem; font-weight:300; color:#888888; line-height:1.6; font-style:italic;">${escapeHtml(ride.notes)}</div>` : ''}
-            ${photos ? `<div style="display:flex; flex-wrap:wrap; gap:6px;">${photos}</div>` : ''}
-            <div style="display: flex; gap: 16px; justify-content: flex-end; padding-top: 4px;">
-                <button class="btn-text-link" onclick="editRide('${ride.id}')">Edit</button>
-                <button class="btn-text-link delete" onclick="deleteRide('${ride.id}')">Delete</button>
+            ${ride.notes ? `<div style="margin-top:12px; font-family:'Inter',sans-serif; font-size:13px; color:var(--muted); line-height:1.5; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; word-break:break-word; overflow-wrap:break-word;">${escapeHTML(ride.notes)}</div>` : ''}
+            ${photosHTML ? `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; max-width:100%;">${photosHTML}</div>` : ''}
+            <div style="display:flex; align-items:center; gap:12px; margin-top:14px; flex-wrap:wrap;">
+                ${isBest ? '<span class="pb-badge">Best</span>' : ''}
+                <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                    <button onclick="editRide('${ride.id}')" style="background:none;border:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;padding:0;text-decoration:underline;">Edit</button>
+                    <button onclick="deleteRide('${ride.id}')" style="background:none;border:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;padding:0;text-decoration:underline;">Delete</button>
+                </div>
             </div>
         </div>`;
-    }).join('');
+        container.appendChild(card);
+ 
+    });
+}
+
+function escapeHTML(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ============================================================
-// MAP + ROUTE
+// LEAFLET MAP
 // ============================================================
-const fallbackWaypoints = [
-    [43.7222, 7.1068],[43.7238, 7.1062],[43.7255, 7.1048],[43.7272, 7.1032],
-    [43.7292, 7.1018],[43.7315, 7.1005],[43.7338, 7.0998],[43.7358, 7.0985],
-    [43.7378, 7.0972],[43.7395, 7.0962],[43.7412, 7.0958],[43.7432, 7.0948],
-    [43.7452, 7.0938],[43.7472, 7.0928],[43.7492, 7.0922],[43.7512, 7.0916],
-    [43.7535, 7.0918],[43.7558, 7.0916],[43.7578, 7.0912],[43.7598, 7.0910],
-    [43.7618, 7.0912],[43.7638, 7.0914],[43.7658, 7.0916],[43.7678, 7.0918],
-    [43.7698, 7.0922],[43.7718, 7.0924],[43.7738, 7.0926],[43.7758, 7.0924],
-    [43.7778, 7.0928],[43.7798, 7.0928],[43.7818, 7.0926],[43.7838, 7.0924],
-    [43.7858, 7.0922],[43.7878, 7.0924],[43.7898, 7.0922],[43.7918, 7.0920],
-    [43.7938, 7.0920],[43.7958, 7.0918],[43.7978, 7.0918],[43.7982, 7.0920]
+var mapObj = null;
+var mapInited = false;
+
+function initMapOnce() {
+    if (mapInited) return;
+    mapInited = true;
+
+    setTimeout(function() {
+        mapObj = L.map('map').setView([43.760, 7.098], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(mapObj);
+
+        loadRouteData();
+    }, 100);
+}
+
+var fallbackWaypoints = [
+    [43.7223,7.1067],[43.7258,7.1045],[43.7298,7.0998],[43.7330,7.0945],[43.7305,7.0915],
+    [43.7325,7.0875],[43.7358,7.0878],[43.7342,7.0925],[43.7372,7.0948],[43.7405,7.0922],
+    [43.7392,7.0878],[43.7422,7.0855],[43.7455,7.0875],[43.7428,7.0902],[43.7458,7.0925],
+    [43.7490,7.0898],[43.7518,7.0865],[43.7492,7.0840],[43.7522,7.0818],[43.7555,7.0842],
+    [43.7560,7.0872],[43.7578,7.0862],[43.7612,7.0862],[43.7645,7.0862],[43.7682,7.0862],
+    [43.7722,7.0862],[43.7768,7.0882],[43.7818,7.0882],[43.7872,7.0892],[43.7898,7.0897]
 ];
 
-const elevationData = [
-    [0, 321],[0.5, 350],[1, 390],[1.5, 425],[2, 460],[2.5, 498],[3, 530],
-    [3.5, 565],[4, 600],[4.5, 628],[5, 660],[5.5, 695],[6, 725],[6.5, 758],
-    [7, 792],[7.5, 825],[8, 860],[8.5, 892],[9, 922],[9.5, 945],[9.7, 962]
+var elevationPoints = [
+    [0,321],[0.5,350],[1,390],[1.5,425],[2,460],[2.5,498],[3,530],[3.5,565],
+    [4,600],[4.5,628],[5,660],[5.5,695],[6,725],[6.5,758],[7,792],[7.5,825],
+    [8,860],[8.5,892],[9,922],[9.5,945],[9.7,962]
 ];
 
-function gradientColor(pct) {
+function getGradientColor(pct) {
     if (pct < 5) return '#4caf50';
     if (pct < 7) return '#ff9800';
     if (pct < 9) return '#f44336';
     return '#9c27b0';
 }
 
-function computeGradient(pts, i) {
-    if (i === 0 || i >= pts.length - 1) return 6.5;
-    const lat1 = pts[i-1][0], lon1 = pts[i-1][1];
-    const lat2 = pts[i][0], lon2 = pts[i][1];
-    const R = 6371000;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-    const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const elev = elevationData;
-    const totalDist = 9700;
-    const fraction = i / pts.length;
-    const elevIdx = Math.min(Math.floor(fraction * (elev.length - 1)), elev.length - 2);
-    const elevGain = elev[elevIdx + 1][1] - elev[elevIdx][1];
-    const segDist = (elev[elevIdx + 1][0] - elev[elevIdx][0]) * 1000;
-    if (segDist <= 0) return 6.5;
-    return Math.abs((elevGain / segDist) * 100);
+function assignElevations(coords) {
+    var totalDist = 0;
+    var dists = [0];
+    for (var i = 1; i < coords.length; i++) {
+        var dlat = coords[i][0] - coords[i-1][0];
+        var dlng = coords[i][1] - coords[i-1][1];
+        var d = Math.sqrt(dlat*dlat + dlng*dlng) * 111;
+        totalDist += d;
+        dists.push(totalDist);
+    }
+    return coords.map(function(c, i) {
+        var frac = totalDist > 0 ? dists[i] / totalDist * 9.7 : 0;
+        var elev = interpolateElev(frac);
+        return [c[0], c[1], elev, frac];
+    });
 }
 
-function bearing(lat1, lon1, lat2, lon2) {
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const y = Math.sin(dLon) * Math.cos(lat2 * Math.PI / 180);
-    const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) - Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(dLon);
-    return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+function interpolateElev(km) {
+    for (var i = 0; i < elevationPoints.length - 1; i++) {
+        var x0 = elevationPoints[i][0], y0 = elevationPoints[i][1];
+        var x1 = elevationPoints[i+1][0], y1 = elevationPoints[i+1][1];
+        if (km >= x0 && km <= x1) {
+            var t = (km - x0) / (x1 - x0);
+            return y0 + t * (y1 - y0);
+        }
+    }
+    return km < elevationPoints[0][0] ? elevationPoints[0][1] : elevationPoints[elevationPoints.length-1][1];
 }
 
-function angleDiff(a, b) {
-    let d = Math.abs(a - b) % 360;
-    return d > 180 ? 360 - d : d;
-}
-
-function initMap() {
-    if (mapInitialized && mapInstance) {
-        mapInstance.invalidateSize();
-        return;
+function drawRouteOnMap(coords) {
+    var withElev = assignElevations(coords);
+    var totalDist = 0;
+    for (var i = 0; i < withElev.length - 1; i++) {
+        var p1 = withElev[i], p2 = withElev[i+1];
+        var dlat = p2[0]-p1[0], dlng = (p2[1]-p1[1])*Math.cos(p1[0]*Math.PI/180);
+        var segDist = Math.sqrt(dlat*dlat+dlng*dlng)*111000;
+        var elevDiff = p2[2]-p1[2];
+        var grad = segDist > 0 ? (elevDiff/segDist)*100 : 0;
+        var col = getGradientColor(Math.max(0,grad));
+        L.polyline([[p1[0],p1[1]],[p2[0],p2[1]]], {color:col, weight:4, opacity:0.9}).addTo(mapObj);
     }
 
-    const mapEl = document.getElementById('map');
-    mapInstance = L.map('map', { zoomControl: true }).setView([43.760, 7.098], 13);
+    // Start marker
+    var startLatLng = [coords[0][0], coords[0][1]];
+    L.circleMarker(startLatLng, {radius:10, fillColor:'#4caf50', color:'#fff', weight:2, fillOpacity:1})
+        .bindPopup('<b>Start — Vence</b><br>321m')
+        .addTo(mapObj);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
-        maxZoom: 18
-    }).addTo(mapInstance);
+    // Summit marker
+    var endLatLng = [coords[coords.length-1][0], coords[coords.length-1][1]];
+    L.circleMarker(endLatLng, {radius:10, fillColor:'#c8922a', color:'#fff', weight:2, fillOpacity:1})
+        .bindPopup('<b>Summit — Col de Vence</b><br>962m')
+        .addTo(mapObj);
 
-    mapInitialized = true;
-    drawRoute();
-    initElevationChart();
-}
-
-async function drawRoute() {
-    const loadingEl = document.getElementById('map-loading');
-    const statusEl = document.getElementById('route-status');
-
-    try {
-        const query = `[out:json][timeout:25];(way["ref"="D2"]["highway"](43.700,7.070,43.810,7.130););out body;>;out skel qt;`;
-        const response = await fetch('https://overpass-api.de/api/interpreter', {
-            method: 'POST',
-            body: 'data=' + encodeURIComponent(query)
-        });
-
-        if (!response.ok) throw new Error('Overpass fetch failed');
-
-        const data = await response.json();
-        const nodes = {};
-        const ways = [];
-
-        data.elements.forEach(el => {
-            if (el.type === 'node') nodes[el.id] = [el.lat, el.lon];
-            if (el.type === 'way') ways.push(el);
-        });
-
-        if (!ways.length || Object.keys(nodes).length === 0) throw new Error('No route data');
-
-        // Merge ways into ordered polyline
-        let allPts = [];
-        ways.forEach(way => {
-            const pts = way.nodes.map(id => nodes[id]).filter(Boolean);
-            allPts = allPts.concat(pts);
-        });
-
-        // Sort south to north
-        allPts.sort((a, b) => a[0] - b[0]);
-
-        drawColoredRoute(allPts);
-        loadingEl.style.display = 'none';
-        statusEl.textContent = 'Live route data loaded';
-    } catch (err) {
-        console.warn('Using fallback route:', err);
-        drawColoredRoute(fallbackWaypoints);
-        loadingEl.style.display = 'none';
-        statusEl.textContent = 'Using approximate route';
+    // Hairpin detection
+    for (var i = 1; i < coords.length - 1; i++) {
+        var b1 = bearing(coords[i-1], coords[i]);
+        var b2 = bearing(coords[i], coords[i+1]);
+        var diff = Math.abs(b2 - b1);
+        if (diff > 180) diff = 360 - diff;
+        if (diff > 120) {
+            L.circleMarker([coords[i][0], coords[i][1]], {radius:5, fillColor:'#888', color:'#fff', weight:1, fillOpacity:0.9})
+                .bindPopup('Hairpin')
+                .addTo(mapObj);
+        }
     }
 
-    // Add markers
-    const startIcon = L.divIcon({
-        html: `<div style="width:14px;height:14px;background:#4caf50;border:2px solid #fff;border-radius:50%;"></div>`,
-        className: '', iconAnchor: [7, 7]
-    });
-    const summitIcon = L.divIcon({
-        html: `<div style="width:14px;height:14px;background:#c8922a;border:2px solid #fff;border-radius:50%;"></div>`,
-        className: '', iconAnchor: [7, 7]
-    });
+    // Distance markers every 2km
+    var cumDist = 0;
+    var nextMarker = 2;
+    for (var i = 1; i < withElev.length; i++) {
+        var dlat2 = withElev[i][0]-withElev[i-1][0];
+        var dlng2 = (withElev[i][1]-withElev[i-1][1])*Math.cos(withElev[i][0]*Math.PI/180);
+        cumDist += Math.sqrt(dlat2*dlat2+dlng2*dlng2)*111;
+        if (cumDist >= nextMarker) {
+            L.marker([withElev[i][0], withElev[i][1]], {
+                icon: L.divIcon({
+                    className:'',
+                    html:'<div style="background:#1a1a1a;color:#f0ede8;font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;padding:3px 6px;border:1px solid #c8922a;white-space:nowrap;">' + nextMarker + 'km</div>',
+                    iconAnchor:[15,10]
+                })
+            }).addTo(mapObj);
+            nextMarker += 2;
+        }
+    }
 
-    L.marker([43.722, 7.107], { icon: startIcon }).addTo(mapInstance)
-        .bindPopup('<strong style="font-family:Montserrat,sans-serif;font-size:0.75rem;letter-spacing:0.08em;">START</strong><br><span style="font-size:0.7rem;color:#888;">Vence &middot; 321m</span>');
-    L.marker([43.798, 7.092], { icon: summitIcon }).addTo(mapInstance)
-        .bindPopup('<strong style="font-family:Montserrat,sans-serif;font-size:0.75rem;letter-spacing:0.08em;">SUMMIT</strong><br><span style="font-size:0.7rem;color:#888;">Col de Vence &middot; 962m</span>');
+    // Gradient legend
+    var legend = L.control({position:'bottomleft'});
+    legend.onAdd = function() {
+        var div = L.DomUtil.create('div','gradient-legend');
+        div.style.cssText = 'background:rgba(15,15,15,0.9);border:1px solid #2a2a2a;padding:10px 14px;font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#f0ede8;';
+        div.innerHTML = '<div style="display:flex;flex-direction:column;gap:4px;">' +
+            '<div><span style="display:inline-block;width:12px;height:12px;background:#4caf50;margin-right:6px;vertical-align:middle;"></span>0–5%</div>' +
+            '<div><span style="display:inline-block;width:12px;height:12px;background:#ff9800;margin-right:6px;vertical-align:middle;"></span>5–7%</div>' +
+            '<div><span style="display:inline-block;width:12px;height:12px;background:#f44336;margin-right:6px;vertical-align:middle;"></span>7–9%</div>' +
+            '<div><span style="display:inline-block;width:12px;height:12px;background:#9c27b0;margin-right:6px;vertical-align:middle;"></span>9%+</div>' +
+            '</div>';
+        return div;
+    };
+    legend.addTo(mapObj);
 
-    // Distance markers
-    const totalPts = fallbackWaypoints.length;
-    [2, 4, 6, 8].forEach(km => {
-        const idx = Math.round((km / 9.7) * totalPts);
-        if (idx < totalPts) {
-            const pt = fallbackWaypoints[Math.min(idx, totalPts - 1)];
-            const distIcon = L.divIcon({
-                html: `<div style="background:#fff;color:#333;font-family:Montserrat,sans-serif;font-size:9px;font-weight:600;padding:1px 4px;border-radius:0;letter-spacing:0.05em;">${km}KM</div>`,
-                className: '', iconAnchor: [12, 8]
-            });
-            L.marker(pt, { icon: distIcon }).addTo(mapInstance);
+    document.getElementById('map-loading').style.display = 'none';
+    mapObj.fitBounds(coords.map(function(c){return [c[0],c[1]];}));
+}
+
+function bearing(p1, p2) {
+    var lat1 = p1[0]*Math.PI/180, lat2 = p2[0]*Math.PI/180;
+    var dLng = (p2[1]-p1[1])*Math.PI/180;
+    var y = Math.sin(dLng)*Math.cos(lat2);
+    var x = Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLng);
+    return Math.atan2(y,x)*180/Math.PI;
+}
+
+function loadRouteData() {
+    var routeCoords = [
+        [43.7223, 7.1067],
+        [43.7238, 7.1055],
+        [43.7252, 7.1041],
+        [43.7265, 7.1025],
+        [43.7278, 7.1008],
+        [43.7290, 7.0992],
+        [43.7305, 7.0975],
+        [43.7318, 7.0958],
+        [43.7328, 7.0940],
+        [43.7335, 7.0922],
+        [43.7322, 7.0908],
+        [43.7308, 7.0895],
+        [43.7298, 7.0880],
+        [43.7312, 7.0865],
+        [43.7328, 7.0855],
+        [43.7345, 7.0862],
+        [43.7358, 7.0875],
+        [43.7348, 7.0892],
+        [43.7338, 7.0908],
+        [43.7350, 7.0922],
+        [43.7365, 7.0932],
+        [43.7382, 7.0922],
+        [43.7395, 7.0908],
+        [43.7408, 7.0892],
+        [43.7398, 7.0875],
+        [43.7382, 7.0862],
+        [43.7395, 7.0848],
+        [43.7412, 7.0840],
+        [43.7428, 7.0848],
+        [43.7442, 7.0862],
+        [43.7432, 7.0878],
+        [43.7418, 7.0892],
+        [43.7428, 7.0908],
+        [43.7445, 7.0915],
+        [43.7462, 7.0905],
+        [43.7478, 7.0892],
+        [43.7492, 7.0878],
+        [43.7505, 7.0862],
+        [43.7495, 7.0845],
+        [43.7480, 7.0835],
+        [43.7492, 7.0820],
+        [43.7508, 7.0812],
+        [43.7525, 7.0822],
+        [43.7540, 7.0835],
+        [43.7528, 7.0850],
+        [43.7515, 7.0865],
+        [43.7528, 7.0878],
+        [43.7545, 7.0870],
+        [43.7562, 7.0858],
+        [43.7578, 7.0868],
+        [43.7595, 7.0878],
+        [43.7612, 7.0868],
+        [43.7628, 7.0858],
+        [43.7645, 7.0870],
+        [43.7662, 7.0882],
+        [43.7652, 7.0865],
+        [43.7638, 7.0852],
+        [43.7650, 7.0838],
+        [43.7668, 7.0848],
+        [43.7685, 7.0858],
+        [43.7702, 7.0868],
+        [43.7720, 7.0878],
+        [43.7738, 7.0872],
+        [43.7755, 7.0865],
+        [43.7772, 7.0875],
+        [43.7790, 7.0882],
+        [43.7808, 7.0878],
+        [43.7825, 7.0885],
+        [43.7845, 7.0888],
+        [43.7865, 7.0890],
+        [43.7885, 7.0893],
+        [43.7898, 7.0895]
+    ];
+
+    // Segment colour bands by gradient
+    var segmentBands = [
+        { start: 0,  end: 9,  color: '#f44336' },
+        { start: 9,  end: 17, color: '#f44336' },
+        { start: 17, end: 24, color: '#f44336' },
+        { start: 24, end: 31, color: '#f44336' },
+        { start: 31, end: 38, color: '#ff9800' },
+        { start: 38, end: 45, color: '#ff9800' },
+        { start: 45, end: 52, color: '#f44336' },
+        { start: 52, end: 60, color: '#9c27b0' },
+        { start: 60, end: 67, color: '#ff9800' },
+        { start: 67, end: 72, color: '#ff9800' }
+    ];
+
+    // Build a per-segment colour lookup
+    var segColors = new Array(routeCoords.length).fill('#ff9800');
+    segmentBands.forEach(function(band) {
+        for (var i = band.start; i < band.end && i < routeCoords.length - 1; i++) {
+            segColors[i] = band.color;
         }
     });
 
-    mapInstance.invalidateSize();
-}
-
-function drawColoredRoute(pts) {
-    for (let i = 1; i < pts.length; i++) {
-        const grad = computeGradient(pts, i);
-        const color = gradientColor(grad);
-        L.polyline([pts[i-1], pts[i]], {
-            color: color, weight: 4, opacity: 0.9
-        }).addTo(mapInstance);
+    // Draw each segment individually
+    for (var i = 0; i < routeCoords.length - 1; i++) {
+        L.polyline([routeCoords[i], routeCoords[i + 1]], {
+            color: segColors[i],
+            weight: 5,
+            opacity: 0.9
+        }).addTo(mapObj);
     }
+
+    // Start marker
+    L.circleMarker(routeCoords[0], {
+        radius: 10, fillColor: '#4caf50', color: '#fff', weight: 2, fillOpacity: 1
+    }).bindPopup('<b>START — Vence · 321m</b>').addTo(mapObj);
+
+    // Summit marker
+    L.circleMarker(routeCoords[routeCoords.length - 1], {
+        radius: 10, fillColor: '#c8922a', color: '#fff', weight: 2, fillOpacity: 1
+    }).bindPopup('<b>SUMMIT — Col de Vence · 962m</b>').addTo(mapObj);
 
     // Hairpin markers
-    const hairpinIcon = L.divIcon({
-        html: `<div style="width:6px;height:6px;background:#aaa;border-radius:50%;border:1px solid #fff;"></div>`,
-        className: '', iconAnchor: [3, 3]
-    });
-    for (let i = 2; i < pts.length - 2; i++) {
-        const b1 = bearing(pts[i-2][0], pts[i-2][1], pts[i-1][0], pts[i-1][1]);
-        const b2 = bearing(pts[i][0], pts[i][1], pts[i+1][0], pts[i+1][1]);
-        if (angleDiff(b1, b2) > 100) {
-            L.marker(pts[i], { icon: hairpinIcon }).addTo(mapInstance);
+    var hairpinIndices = [9, 16, 24, 30, 38, 44, 54];
+    hairpinIndices.forEach(function(idx) {
+        if (routeCoords[idx]) {
+            L.circleMarker(routeCoords[idx], {
+                radius: 6, fillColor: '#888', color: '#fff', weight: 1, fillOpacity: 0.9
+            }).bindPopup('Hairpin').addTo(mapObj);
         }
-    }
+    });
+
+    // Distance / elevation markers
+    var distMarkers = [
+        { idx: 9,  label: '1 km', elev: '390m' },
+        { idx: 18, label: '2 km', elev: '460m' },
+        { idx: 28, label: '3 km', elev: '530m' },
+        { idx: 38, label: '4 km', elev: '600m' },
+        { idx: 47, label: '5 km', elev: '660m' },
+        { idx: 52, label: '6 km', elev: '725m' },
+        { idx: 60, label: '7 km', elev: '792m' },
+        { idx: 64, label: '8 km', elev: '860m' }
+    ];
+    distMarkers.forEach(function(m) {
+        if (routeCoords[m.idx]) {
+            L.marker(routeCoords[m.idx], {
+                icon: L.divIcon({
+                    className: '',
+                    html: '<div style="background:#1a1a1a;color:#f0ede8;font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;padding:3px 6px;border:1px solid #c8922a;white-space:nowrap;">' + m.label + ' · ' + m.elev + '</div>',
+                    iconAnchor: [20, 10]
+                })
+            }).addTo(mapObj);
+        }
+    });
+
+    // Gradient legend
+    var legend = L.control({ position: 'bottomleft' });
+    legend.onAdd = function() {
+        var div = L.DomUtil.create('div', 'gradient-legend');
+        div.style.cssText = 'background:rgba(15,15,15,0.9);border:1px solid #2a2a2a;padding:10px 14px;font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#f0ede8;';
+        div.innerHTML =
+            '<div style="display:flex;flex-direction:column;gap:4px;">' +
+            '<div><span style="display:inline-block;width:12px;height:12px;background:#ff9800;margin-right:6px;vertical-align:middle;"></span>5–7% Orange</div>' +
+            '<div><span style="display:inline-block;width:12px;height:12px;background:#f44336;margin-right:6px;vertical-align:middle;"></span>7–9% Red</div>' +
+            '<div><span style="display:inline-block;width:12px;height:12px;background:#9c27b0;margin-right:6px;vertical-align:middle;"></span>9%+ Purple</div>' +
+            '</div>';
+        return div;
+    };
+    legend.addTo(mapObj);
+
+    document.getElementById('map-loading').style.display = 'none';
+    mapObj.fitBounds(routeCoords.map(function(c) { return [c[0], c[1]]; }));
 }
+ 
 
 // ============================================================
 // ELEVATION CHART
 // ============================================================
-function initElevationChart() {
-    const canvas = document.getElementById('elevation-chart');
-    if (!canvas) return;
-    if (elevationChart) { elevationChart.destroy(); elevationChart = null; }
+var chartObj = null;
+var chartInited = false;
 
-    const isDark = !isLightMode;
-    const gridColor = isDark ? 'rgba(42,42,42,0.8)' : 'rgba(200,195,190,0.6)';
-    const tickColor = isDark ? '#888888' : '#666666';
-    const accentColor = isDark ? '#c8922a' : '#b07d20';
-    const fillColor = isDark ? 'rgba(200,146,42,0.3)' : 'rgba(176,125,32,0.3)';
+function initChartOnce() {
+    if (chartInited) return;
+    chartInited = true;
 
-    const labels = elevationData.map(d => d[0] + 'km');
-    const data = elevationData.map(d => d[1]);
+    var ctx = document.getElementById('elevation-chart').getContext('2d');
+    var labels = elevationPoints.map(function(p) { return p[0]; });
+    var data = elevationPoints.map(function(p) { return p[1]; });
 
-    elevationChart = new Chart(canvas, {
+    chartObj = new Chart(ctx, {
         type: 'line',
         data: {
-            labels,
+            labels: labels,
             datasets: [{
-                label: 'Elevation (m)',
-                data,
-                borderColor: accentColor,
-                backgroundColor: fillColor,
+                data: data,
+                borderColor: '#c8922a',
                 borderWidth: 2,
-                pointRadius: 3,
-                pointBackgroundColor: accentColor,
+                pointRadius: 0,
+                pointHoverRadius: 5,
+                pointHoverBackgroundColor: '#c8922a',
                 fill: true,
+                backgroundColor: function(context) {
+                    var chart = context.chart;
+                    var ctx2 = chart.ctx;
+                    var chartArea = chart.chartArea;
+                    if (!chartArea) return 'rgba(200,146,42,0.15)';
+                    var gradient = ctx2.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                    gradient.addColorStop(0, 'rgba(200,146,42,0.3)');
+                    gradient.addColorStop(1, 'rgba(200,146,42,0.0)');
+                    return gradient;
+                },
                 tension: 0.4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { display: false },
                 tooltip: {
                     backgroundColor: '#1a1a1a',
-                    titleColor: '#f0ede8',
-                    bodyColor: '#888888',
                     borderColor: '#2a2a2a',
                     borderWidth: 1,
-                    titleFont: { family: 'Montserrat', weight: '600', size: 11 },
-                    bodyFont: { family: 'Inter', size: 11 },
+                    titleColor: '#888',
+                    bodyColor: '#f0ede8',
+                    titleFont: { family: 'Montserrat', size: 10, weight: '600' },
+                    bodyFont: { family: 'Inter', size: 13 },
                     callbacks: {
-                        label: function(ctx) {
-                            const idx = ctx.dataIndex;
-                            const elev = ctx.parsed.y;
-                            const dist = elevationData[idx][0];
-                            let grad = '—';
-                            if (idx > 0) {
-                                const dElev = elevationData[idx][1] - elevationData[idx-1][1];
-                                const dDist = (elevationData[idx][0] - elevationData[idx-1][0]) * 1000;
-                                grad = ((dElev / dDist) * 100).toFixed(1) + '%';
-                            }
-                            return [`${elev}m elevation`, `Gradient: ${grad}`];
+                        title: function(items) { return items[0].label + ' km'; },
+                        label: function(item) {
+                            var km = parseFloat(item.label);
+                            var elev = item.raw;
+                            var prevIdx = item.dataIndex > 0 ? item.dataIndex - 1 : 0;
+                            var prevKm = elevationPoints[prevIdx][0];
+                            var prevElev = elevationPoints[prevIdx][1];
+                            var segDist = (km - prevKm) * 1000;
+                            var grad = segDist > 0 ? ((elev - prevElev) / segDist * 100).toFixed(1) : '0.0';
+                            return elev + 'm  ·  ' + grad + '% gradient';
                         }
                     }
                 }
             },
             scales: {
                 x: {
-                    grid: { color: gridColor },
-                    ticks: { color: tickColor, font: { family: 'Inter', size: 10 }, maxTicksLimit: 10 },
-                    border: { color: gridColor }
+                    grid: { color: '#2a2a2a', drawBorder: false },
+                    ticks: {
+                        color: '#888',
+                        font: { family: 'Montserrat', size: 10 },
+                        callback: function(val, idx) { return labels[idx] + 'km'; }
+                    }
                 },
                 y: {
-                    grid: { color: gridColor },
-                    ticks: { color: tickColor, font: { family: 'Inter', size: 10 }, callback: v => v + 'm' },
-                    border: { color: gridColor },
-                    min: 280
+                    min: 300,
+                    max: 1000,
+                    grid: { color: '#2a2a2a', drawBorder: false },
+                    ticks: {
+                        color: '#888',
+                        font: { family: 'Montserrat', size: 10 },
+                        callback: function(val) { return val + 'm'; }
+                    }
                 }
             }
         }
@@ -1508,234 +1565,155 @@ function initElevationChart() {
 }
 
 // ============================================================
-// UTILITIES
+// PWA / INSTALL
 // ============================================================
-function formatTime(h, m, s) {
-    return [h, m, s].map(n => String(n).padStart(2, '0')).join(':');
-}
-function formatSecondsToTime(totalSec) {
-    const h = Math.floor(totalSec / 3600);
-    const m = Math.floor((totalSec % 3600) / 60);
-    const s = totalSec % 60;
-    return formatTime(h, m, s);
-}
-function escapeHtml(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function dismissInstall() {
+    localStorage.setItem('colDeVencePWADismissed','true');
+    document.getElementById('install-banner').classList.remove('show');
 }
 
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-function openLightbox(src) {
-    const lb = document.getElementById('lightbox');
-    document.getElementById('lightbox-img').src = src;
-    lb.classList.add('active');
-}
-function closeLightbox() {
-    document.getElementById('lightbox').classList.remove('active');
-}
-
-// Initialize tab display
-document.getElementById('tab-home').style.display = 'block';
-['tab-log', 'tab-rides', 'tab-route'].forEach(id => {
-    document.getElementById(id).style.display = 'none';
-});
-
-// ============================================================
-// PWA — MANIFEST (injected as Blob URL)
-// ============================================================
-(function injectManifest() {
-    const manifest = {
-        name: 'Col de Vence — Cycling Tracker',
-        short_name: 'Col de Vence',
-        description: 'Track your Col de Vence ascent times, conditions and ride history',
-        start_url: '.',
-        display: 'standalone',
-        background_color: '#0f0f0f',
-        theme_color: '#c8922a',
-        orientation: 'portrait-primary',
-        icons: [
-            {
-                src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%230f0f0f'/><text x='96' y='130' font-size='120' text-anchor='middle' fill='%23c8922a'>⛰</text></svg>",
-                sizes: '192x192',
-                type: 'image/svg+xml'
-            },
-            {
-                src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%230f0f0f'/><text x='256' y='360' font-size='320' text-anchor='middle' fill='%23c8922a'>⛰</text></svg>",
-                sizes: '512x512',
-                type: 'image/svg+xml'
-            }
-        ]
-    };
-    try {
-        const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('link');
-        link.rel = 'manifest';
-        link.href = url;
-        document.head.appendChild(link);
-    } catch (e) {
-        console.warn('Manifest injection failed:', e);
+function doInstall() {
+    if (deferredInstall) {
+        deferredInstall.prompt();
+        deferredInstall.userChoice.then(function() {
+            deferredInstall = null;
+            document.getElementById('install-banner').classList.remove('show');
+        });
     }
-})();
+}
+
+function dismissIOS() {
+    localStorage.setItem('colDeVenceIOSPrompt','true');
+    document.getElementById('ios-banner').classList.remove('show');
+}
+
+function isIOS() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+
+function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+}
 
 // ============================================================
-// PWA — SERVICE WORKER (injected as Blob URL)
+// SERVICE WORKER
 // ============================================================
-(function registerServiceWorker() {
+function registerServiceWorker() {
     if (!('serviceWorker' in navigator)) return;
-
-    const swCode = `
-const CACHE_NAME = 'col-de-vence-v1';
+    var swCode = `
+const CACHE = 'cdv-v1';
 const ASSETS = [
-  self.location.href,
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-  'https://cdn.jsdelivr.net/npm/chart.js'
+  'https://cdn.jsdelivr.net/npm/chart.js',
+  'https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&family=Inter:wght@300;400;500&display=swap'
 ];
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS).catch(() => {})));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(()=>{})));
   self.skipWaiting();
 });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
   self.clients.claim();
 });
 self.addEventListener('fetch', e => {
-  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).then(res => {
-    if(res && res.status === 200 && res.type === 'basic') {
-      const clone = res.clone();
-      caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
-    }
-    return res;
-  })).catch(() => caches.match(e.request)));
+  e.respondWith(
+    caches.match(e.request).then(r => r || fetch(e.request).then(res => {
+      if(res && res.status===200 && e.request.method==='GET'){
+        var rc = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, rc));
+      }
+      return res;
+    }).catch(()=>{}))
+  );
 });
-    `;
-
-    try {
-        const blob = new Blob([swCode], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(blob);
-        navigator.serviceWorker.register(swUrl, { scope: './' })
-            .then(reg => {
-                console.log('Service Worker registered:', reg.scope);
-                // Update cache status display once SW is active
-                reg.addEventListener('updatefound', () => {
-                    const newWorker = reg.installing;
-                    if (newWorker) {
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'activated') {
-                                updateCacheStatus(true);
-                            }
-                        });
-                    }
-                });
-                // If already active
-                if (reg.active) {
-                    updateCacheStatus(true);
-                }
-            })
-            .catch(err => {
-                console.warn('Service Worker registration failed:', err);
-                updateCacheStatus(false);
-            });
-    } catch (e) {
-        console.warn('Service Worker blob creation failed:', e);
-        updateCacheStatus(false);
-    }
-})();
-
-function updateCacheStatus(cached) {
-    const el = document.getElementById('pwa-cache-status');
-    if (!el) return;
-    if (cached) {
-        el.textContent = 'Core assets cached';
-        el.style.color = '#4caf50';
-    } else {
-        el.textContent = 'Caching in progress...';
-    }
+`;
+    var blob = new Blob([swCode], {type:'application/javascript'});
+    var swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(function(){});
 }
 
 // ============================================================
-// PWA — INSTALL PROMPT BANNER
+// RESPONSIVE STATS GRID
 // ============================================================
-let deferredInstallPrompt = null;
+function applyResponsiveGrid() {
+    var w = window.innerWidth;
+    var sg = document.getElementById('stats-grid');
+    var fg = document.getElementById('facts-grid');
+    var ff = document.getElementById('form-grid');
+    var rs = document.getElementById('rides-summary');
 
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredInstallPrompt = e;
-    if (!localStorage.getItem('pwa-dismissed')) {
-        const banner = document.getElementById('pwa-banner');
-        if (banner) {
-            // Small delay so banner doesn't flash immediately on load
-            setTimeout(() => banner.classList.add('visible'), 1500);
+    if (sg) sg.style.gridTemplateColumns = w < 600 ? 'repeat(2,1fr)' : 'repeat(4,1fr)';
+    if (fg) fg.style.gridTemplateColumns = w < 600 ? '1fr' : (w < 900 ? 'repeat(2,1fr)' : 'repeat(3,1fr)');
+    if (ff) ff.style.gridTemplateColumns = w < 640 ? '1fr' : '1fr 1fr';
+    if (rs) rs.style.gridTemplateColumns = w < 600 ? 'repeat(2,1fr)' : 'repeat(4,1fr)';
+}
+
+// ============================================================
+// INIT (ONE DOMContentLoaded)
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Theme
+    var savedTheme = localStorage.getItem('colDeVenceTheme') || 'dark';
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+        document.getElementById('theme-btn-desktop').textContent = 'Dark';
+    } else {
+        document.getElementById('theme-btn-desktop').textContent = 'Light';
+    }
+
+    // Default date
+    setDefaultDate();
+
+    // Home PB
+    updateHomePB();
+
+    // Responsive grid
+    applyResponsiveGrid();
+    window.addEventListener('resize', applyResponsiveGrid);
+
+    // Online/offline
+    function updateOnlineStatus() {
+        var dot = document.getElementById('online-dot');
+        if (navigator.onLine) {
+            dot.classList.remove('offline');
+            dot.title = 'Online';
+        } else {
+            dot.classList.add('offline');
+            dot.title = 'Offline';
         }
     }
-});
-
-document.getElementById('pwa-install-btn').addEventListener('click', () => {
-    const banner = document.getElementById('pwa-banner');
-    if (!deferredInstallPrompt) return;
-    deferredInstallPrompt.prompt();
-    deferredInstallPrompt.userChoice.then(choice => {
-        if (choice.outcome === 'accepted') {
-            showToast('App installed successfully');
-        }
-        deferredInstallPrompt = null;
-        if (banner) banner.classList.remove('visible');
+    updateOnlineStatus();
+    window.addEventListener('online', function() {
+        updateOnlineStatus();
+        showToast('Back online.');
     });
-});
+    window.addEventListener('offline', function() {
+        updateOnlineStatus();
+        showToast('You are offline.');
+    });
 
-document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
-    const banner = document.getElementById('pwa-banner');
-    if (banner) banner.classList.remove('visible');
-    localStorage.setItem('pwa-dismissed', '1');
-});
+    // Android install prompt
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredInstall = e;
+        if (!localStorage.getItem('colDeVencePWADismissed')) {
+            setTimeout(function() {
+                document.getElementById('install-banner').classList.add('show');
+            }, 3000);
+        }
+    });
 
-// Hide banner if already dismissed
-if (localStorage.getItem('pwa-dismissed')) {
-    const banner = document.getElementById('pwa-banner');
-    if (banner) banner.style.display = 'none';
-}
-
-// Hide banner if app is already installed (standalone mode)
-if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-    const banner = document.getElementById('pwa-banner');
-    if (banner) banner.style.display = 'none';
-}
-
-// ============================================================
-// PWA — OFFLINE INDICATOR
-// ============================================================
-function updateOnlineStatus() {
-    const dot = document.getElementById('online-dot');
-    const label = document.getElementById('offline-label');
-    if (!dot || !label) return;
-
-    if (navigator.onLine) {
-        dot.classList.remove('offline');
-        label.style.display = 'none';
-    } else {
-        dot.classList.add('offline');
-        label.style.display = 'block';
+    // iOS install prompt
+    if (isIOS() && !isStandalone() && !localStorage.getItem('colDeVenceIOSPrompt')) {
+        setTimeout(function() {
+            document.getElementById('ios-banner').classList.add('show');
+        }, 2000);
     }
-}
 
-window.addEventListener('online', () => {
-    updateOnlineStatus();
-    showToast('Connection restored');
+    // Service worker
+    registerServiceWorker();
 });
-
-window.addEventListener('offline', () => {
-    updateOnlineStatus();
-    showToast('You are offline — previously loaded data is available');
-});
-
-// Set initial state
-updateOnlineStatus();
 </script>
 </body>
 </html>
